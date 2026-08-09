@@ -5,7 +5,7 @@ import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult } fr
 
 @Injectable({ providedIn: 'root' })
 export class ScreenerService {
-  private readonly API_URL = 'http://localhost:5000/api/screener';
+  private readonly API_URL = 'http://localhost:5100/api/screener';
 
   constructor(private http: HttpClient) {}
 

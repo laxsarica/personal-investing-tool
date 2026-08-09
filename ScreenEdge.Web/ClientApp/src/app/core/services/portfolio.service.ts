@@ -5,7 +5,7 @@ import { Holding, Position, FundDetail } from '../../shared/models/portfolio.mod
 
 @Injectable({ providedIn: 'root' })
 export class PortfolioService {
-  private readonly API_URL = 'http://localhost:5000/api/portfolio';
+  private readonly API_URL = 'http://localhost:5100/api/portfolio';
 
   constructor(private http: HttpClient) {}
 
@@ -22,6 +22,6 @@ export class PortfolioService {
   }
 
   getKiteStatus(): Observable<{isAuthenticated: boolean}> {
-    return this.http.get<{isAuthenticated: boolean}>('http://localhost:5000/api/kiteauth/status');
+    return this.http.get<{isAuthenticated: boolean}>('http://localhost:5100/api/kiteauth/status');
   }
 }

@@ -38,7 +38,7 @@ export class KiteCallbackComponent implements OnInit {
     const status = params['status'];
 
     if (status === 'success' && requestToken) {
-      this.http.post<{isAuthenticated: boolean}>('http://localhost:5000/api/kiteauth/exchange-token', {
+      this.http.post<{isAuthenticated: boolean}>('http://localhost:5100/api/kiteauth/exchange-token', {
         requestToken: requestToken
       }).subscribe({
         next: (res) => {

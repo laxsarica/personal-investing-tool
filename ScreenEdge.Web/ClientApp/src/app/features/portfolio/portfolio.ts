@@ -81,7 +81,7 @@ export class PortfolioComponent implements OnInit {
   }
 
   loginToKite(): void {
-    window.location.href = 'http://localhost:5000/api/kiteauth/login';
+    window.location.href = 'http://localhost:5100/api/kiteauth/login';
   }
 
   get totalHoldingInvested(): number {

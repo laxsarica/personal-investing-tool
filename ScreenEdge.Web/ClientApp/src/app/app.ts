@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
   constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Intercept Kite redirect: http://localhost:4200?request_token=xxx&status=success
+    // Intercept Kite redirect: http://localhost:8080?request_token=xxx&status=success
     const params = new URLSearchParams(window.location.search);
     const requestToken = params.get('request_token');
     const status = params.get('status');

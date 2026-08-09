@@ -38,6 +38,7 @@ if (!(Test-Path "IIS:\AppPools\$apiPoolName")) {
     New-WebAppPool -Name $apiPoolName
     Set-ItemProperty "IIS:\AppPools\$apiPoolName" -Name "managedRuntimeVersion" -Value ""
     Set-ItemProperty "IIS:\AppPools\$apiPoolName" -Name "processModel.idleTimeout" -Value "00:00:00" # Prevent AppPool from sleeping (Crucial for Hangfire)
+    Set-ItemProperty "IIS:\AppPools\$apiPoolName" -Name "processModel.identityType" -Value "LocalSystem"
 }
 
 if (Test-Path "IIS:\Sites\$apiSiteName") {
@@ -46,7 +47,7 @@ if (Test-Path "IIS:\Sites\$apiSiteName") {
 New-WebSite -Name $apiSiteName -Port 5100 -PhysicalPath $apiPath -ApplicationPool $apiPoolName
 Write-Host "API Site created on http://localhost:5100"
 
-# 5. Setup Web Site (Port 4200)
+# 5. Setup Web Site (Port 8080)
 $webPoolName = "ScreenEdgeWebPool"
 $webSiteName = "ScreenEdgeWeb"
 
@@ -57,8 +58,8 @@ if (!(Test-Path "IIS:\AppPools\$webPoolName")) {
 if (Test-Path "IIS:\Sites\$webSiteName") {
     Remove-WebSite -Name $webSiteName
 }
-New-WebSite -Name $webSiteName -Port 4200 -PhysicalPath $webPath -ApplicationPool $webPoolName
-Write-Host "Web Site created on http://localhost:4200"
+New-WebSite -Name $webSiteName -Port 8080 -PhysicalPath $webPath -ApplicationPool $webPoolName
+Write-Host "Web Site created on http://localhost:8080"
 
 Write-Host "IIS Setup Complete!"
 Write-Host "Please ensure you have installed the .NET 8 Hosting Bundle from Microsoft."

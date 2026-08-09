@@ -6,7 +6,7 @@ import { LoginRequest, LoginResponse } from '../../shared/models/screener.model'
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:5000/api/auth';
+  private readonly API_URL = 'http://localhost:5100/api/auth';
   private readonly TOKEN_KEY = 'screenedge_token';
   private readonly USERNAME_KEY = 'screenedge_username';
 

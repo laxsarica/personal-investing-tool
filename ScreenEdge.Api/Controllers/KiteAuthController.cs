@@ -84,7 +84,7 @@ public class KiteAuthController : ControllerBase
                 {
                     _creds.KiteAccessToken = response.data.access_token;
                     _logger.LogInformation("Successfully retrieved Kite access token via callback.");
-                    return Redirect("http://localhost:4200/portfolio");
+                    return Redirect("http://localhost:8080/portfolio");
                 }
                 else
                 {
