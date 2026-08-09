@@ -34,12 +34,8 @@ msbuild.wrn
 *.nuget.props
 *.nuget.targets
 
-# ── Secrets & local config overrides ──────────────────
-appsettings.Development.json
-appsettings.Local.json
-appsettings.*.json
-!appsettings.json
-secrets.json
+# ── Secrets & local config (private repo — include all) ──
+# appsettings.*.json files are committed intentionally
 
 # ── Angular / Node ────────────────────────────────────
 node_modules/
