@@ -8,6 +8,9 @@ using ScreenEdge.Screener;
 using ScreenEdge.Broker;
 using ScreenEdge.Api.Services;
 using ScreenEdge.Broker.Kite;
+using Hangfire;
+using Hangfire.SqlServer;
+using ScreenEdge.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,12 +53,32 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Hangfire Configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableWebApiExceptionCasing = true
+    }));
+
+// Add the Hangfire processing server
+builder.Services.AddHangfireServer();
+
 // CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "http://localhost")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -72,6 +95,23 @@ if (app.Environment.IsDevelopment())
 app.UseCors("Angular");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire Dashboard (No authentication configured for local use)
+app.UseHangfireDashboard("/hangfire");
+
 app.MapControllers();
+
+// Register Hangfire Recurring Jobs
+RecurringJob.AddOrUpdate<ScreenerJob>(
+    "daily-data-sync",
+    job => job.RunDailyDataSyncAsync(),
+    "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
+);
+
+RecurringJob.AddOrUpdate<ScreenerJob>(
+    "daily-screener-run",
+    job => job.RunScreenerOnlyAsync(),
+    "30 1 * * 1-5" // 7:00 AM IST (1:30 AM UTC), Monday to Friday
+);
 
 app.Run();

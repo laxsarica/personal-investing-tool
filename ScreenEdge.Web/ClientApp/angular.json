@@ -47,7 +47,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/web.config"
             ],
             "styles": [
               "src/styles.css"
