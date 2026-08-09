@@ -1,0 +1,207 @@
+<div class="screener-layout">
+  <!-- Left Sidebar Filters -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="filter-title">Filter</span>
+      <button class="btn-reset" (click)="resetFilters()">Reset all</button>
+    </div>
+
+    <!-- Strategy Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('strategy')">
+        <span>Strategy</span>
+        <i [ngClass]="expandedSections['strategy'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['strategy']) {
+        <div class="accordion-content">
+          @for (s of strategies; track s) {
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+              <input type="radio" name="strategy" [checked]="activeStrategy === s" (change)="setStrategy(s)">
+              {{ s === 'All' ? 'All Strategies' : s }}
+            </label>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Timeframe Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('timeframe')">
+        <span>Timeframe</span>
+        <i [ngClass]="expandedSections['timeframe'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['timeframe']) {
+        <div class="accordion-content" style="flex-direction:row; flex-wrap:wrap;">
+          @for (tf of timeFrames; track tf) {
+            <button class="btn-reset" [style.background]="activeTimeFrame === tf ? 'var(--bg)' : 'transparent'" (click)="setTimeFrame(tf)">
+              {{ tf === 'All' ? 'All' : tf }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- RSI (Daily) Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('rsi')">
+        <span>RSI</span>
+        <i [ngClass]="expandedSections['rsi'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['rsi']) {
+        <div class="accordion-content">
+          <div class="filter-value-row">
+            <input type="number" class="filter-input" [(ngModel)]="rsiMin" min="0" max="100" placeholder="0">
+            <span style="font-size:12px; color:var(--text-secondary)">to</span>
+            <input type="number" class="filter-input" [(ngModel)]="rsiMax" min="0" max="100" placeholder="100">
+          </div>
+          <div class="filter-buttons">
+            <button (click)="setRsiPreset('rsi','low')" [class.active-preset]="isPreset('rsi','low')">Low</button>
+            <button (click)="setRsiPreset('rsi','mid')" [class.active-preset]="isPreset('rsi','mid')">Mid</button>
+            <button (click)="setRsiPreset('rsi','high')" [class.active-preset]="isPreset('rsi','high')">High</button>
+            <button (click)="setRsiPreset('rsi','reset')">All</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- RSI Weekly Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('rsiWeekly')">
+        <span>RSI Weekly</span>
+        <i [ngClass]="expandedSections['rsiWeekly'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['rsiWeekly']) {
+        <div class="accordion-content">
+          <div class="filter-value-row">
+            <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMin" min="0" max="100" placeholder="0">
+            <span style="font-size:12px; color:var(--text-secondary)">to</span>
+            <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMax" min="0" max="100" placeholder="100">
+          </div>
+          <div class="filter-buttons">
+            <button (click)="setRsiPreset('rsiWeekly','low')" [class.active-preset]="isPreset('rsiWeekly','low')">Low</button>
+            <button (click)="setRsiPreset('rsiWeekly','mid')" [class.active-preset]="isPreset('rsiWeekly','mid')">Mid</button>
+            <button (click)="setRsiPreset('rsiWeekly','high')" [class.active-preset]="isPreset('rsiWeekly','high')">High</button>
+            <button (click)="setRsiPreset('rsiWeekly','reset')">All</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- RSI Monthly Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('rsiMonthly')">
+        <span>RSI Monthly</span>
+        <i [ngClass]="expandedSections['rsiMonthly'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['rsiMonthly']) {
+        <div class="accordion-content">
+          <div class="filter-value-row">
+            <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMin" min="0" max="100" placeholder="0">
+            <span style="font-size:12px; color:var(--text-secondary)">to</span>
+            <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMax" min="0" max="100" placeholder="100">
+          </div>
+          <div class="filter-buttons">
+            <button (click)="setRsiPreset('rsiMonthly','low')" [class.active-preset]="isPreset('rsiMonthly','low')">Low</button>
+            <button (click)="setRsiPreset('rsiMonthly','mid')" [class.active-preset]="isPreset('rsiMonthly','mid')">Mid</button>
+            <button (click)="setRsiPreset('rsiMonthly','high')" [class.active-preset]="isPreset('rsiMonthly','high')">High</button>
+            <button (click)="setRsiPreset('rsiMonthly','reset')">All</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="main-header">
+      <div class="main-title">My Screenr</div>
+      <div class="header-actions">
+        <button class="btn-icon" title="Edit Screenr (Coming Soon)"><i class="ri-pencil-line"></i></button>
+        <button class="btn-icon" title="Share Screenr (Coming Soon)"><i class="ri-share-line"></i></button>
+        <button class="btn-save" title="Save Screenr (Coming Soon)">Save</button>
+      </div>
+    </div>
+
+    <div class="results-bar">
+      <div class="results-info">
+        <span>Showing <strong>1 - {{ filteredResults.length }}</strong> of {{ filteredResults.length }} results</span>
+      </div>
+      <div class="results-actions">
+        <span>last updated at {{ currentTime }} IST</span>
+        <button class="btn-export" (click)="loadResults()" [disabled]="loading">
+          <i class="ri-refresh-line"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      @if (loading) {
+        <div class="loading">Loading...</div>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th [class.sort-active]="sortColumn === 'symbol'" (click)="sort('symbol')">
+                <span style="display:flex; align-items:center; gap:4px;">
+                  Symbol <i [class]="sortColumn === 'symbol' && sortDirection === 'desc' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'" [style.opacity]="sortColumn === 'symbol' ? 1 : 0.3"></i>
+                </span>
+              </th>
+              <th [class.sort-active]="sortColumn === 'recognizeDate'" (click)="sort('recognizeDate')">
+                Date
+              </th>
+              <th [class.sort-active]="sortColumn === 'screenerName'" (click)="sort('screenerName')">
+                Strategy
+              </th>
+              <th>TF</th>
+              <th [class.sort-active]="sortColumn === 'recognizedPrice'" (click)="sort('recognizedPrice')">
+                Price
+              </th>
+              <th [class.sort-active]="sortColumn === 'rsi'" (click)="sort('rsi')">
+                RSI
+              </th>
+              <th [class.sort-active]="sortColumn === 'rsiWeekly'" (click)="sort('rsiWeekly')">
+                RSI(W)
+              </th>
+              <th [class.sort-active]="sortColumn === 'rsiMonthly'" (click)="sort('rsiMonthly')">
+                RSI(M)
+              </th>
+              <th [class.sort-active]="sortColumn === 'volume'" (click)="sort('volume')">
+                Volume
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredResults; track r.id) {
+              <tr [class.row-multi-hit]="multiTimeFrameSymbols.has(r.symbol) && multiStrategySymbols.has(r.symbol)">
+                <td><strong>{{ r.symbol }}</strong></td>
+                <td>{{ formatDate(r.recognizeDate) }}</td>
+                <td class="text-col">
+                  <span class="strategy-badge" [class.badge-multi-strategy]="multiStrategySymbols.has(r.symbol)">
+                    {{ r.screenerName }}
+                    @if (multiStrategySymbols.has(r.symbol)) { <span class="badge-dot">&#x2605;</span> }
+                  </span>
+                </td>
+                <td class="text-col">
+                  <strong [class.tf-multi]="multiTimeFrameSymbols.has(r.symbol)">{{ r.timeFrame }}</strong>
+                  @if (multiTimeFrameSymbols.has(r.symbol)) { <span class="tf-badge">D+W</span> }
+                </td>
+                <td>{{ formatPrice(r.recognizedPrice) }}</td>
+                <td>{{ formatRsi(r.rsi) }}</td>
+                <td>{{ formatRsi(r.rsiWeekly) }}</td>
+                <td>{{ formatRsi(r.rsiMonthly) }}</td>
+                <td>{{ formatVolume(r.volume) }}</td>
+              </tr>
+            }
+            @if (filteredResults.length === 0) {
+              <tr>
+                <td colspan="9" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+                  No results found
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+</div>

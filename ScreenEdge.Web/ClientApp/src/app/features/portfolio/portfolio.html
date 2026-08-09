@@ -1,0 +1,254 @@
+<div class="main-content">
+  <!-- Header -->
+  <div class="main-header">
+    <div class="main-title">Portfolio</div>
+    <div class="header-actions" style="display: flex; gap: var(--space-4); align-items: center;">
+      <select class="form-control" [ngModel]="selectedBroker" (ngModelChange)="setBroker($event)" style="width: auto; height: 32px; padding: 0 var(--space-3); border-radius: var(--radius);">
+        <option value="AngelOne">Angel One</option>
+        <option value="Kite">Zerodha Kite</option>
+      </select>
+      
+      @if (selectedBroker === 'Kite' && !isKiteAuthenticated) {
+        <button class="btn btn-primary" (click)="loginToKite()" style="height: 32px; padding: 0 var(--space-4);">
+          <i class="ri-login-circle-line" style="margin-right: 4px;"></i> Login to Kite
+        </button>
+      }
+
+      <button class="btn-icon" (click)="loadAll()" title="Refresh all">
+        <i class="ri-refresh-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Strip -->
+  <div class="portfolio-summary">
+    <div class="summary-card">
+      <span class="summary-label">Invested</span>
+      <span class="summary-value">₹{{ formatCurrency(totalHoldingInvested) }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-card">
+      <span class="summary-label">Current</span>
+      <span class="summary-value">₹{{ formatCurrency(totalHoldingCurrent) }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-card">
+      <span class="summary-label">Holdings P&L</span>
+      <span class="summary-value" [class.text-gain]="totalHoldingPnl >= 0" [class.text-loss]="totalHoldingPnl < 0">
+        {{ totalHoldingPnl >= 0 ? '+' : '' }}₹{{ formatCurrency(totalHoldingPnl) }}
+      </span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-card">
+      <span class="summary-label">Day P&L</span>
+      <span class="summary-value" [class.text-gain]="totalPositionPnl >= 0" [class.text-loss]="totalPositionPnl < 0">
+        {{ totalPositionPnl >= 0 ? '+' : '' }}₹{{ formatCurrency(totalPositionPnl) }}
+      </span>
+    </div>
+    @if (funds) {
+      <div class="summary-divider"></div>
+      <div class="summary-card">
+        <span class="summary-label">Available Cash</span>
+        <span class="summary-value">₹{{ formatCurrency(funds.availablecash) }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" style="padding: 0 var(--space-5);">
+    <button class="tab" [class.active]="activeTab === 'holdings'" (click)="setTab('holdings')">
+      <i class="ri-stock-line"></i> Holdings ({{ holdings.length }})
+    </button>
+    <button class="tab" [class.active]="activeTab === 'positions'" (click)="setTab('positions')">
+      <i class="ri-arrow-up-down-line"></i> Positions ({{ positions.length }})
+    </button>
+    <button class="tab" [class.active]="activeTab === 'funds'" (click)="setTab('funds')">
+      <i class="ri-wallet-3-line"></i> Funds
+    </button>
+  </div>
+
+  <!-- Holdings Tab -->
+  @if (activeTab === 'holdings') {
+    <div class="table-container">
+      @if (loadingHoldings) {
+        <div class="loading"><i class="ri-loader-4-line"></i> Loading holdings...</div>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Qty</th>
+              <th>T1 Qty</th>
+              <th>Avg Price</th>
+              <th>LTP</th>
+              <th>P&L</th>
+              <th>P&L %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (h of holdings; track h.symboltoken) {
+              <tr>
+                <td><strong>{{ h.tradingsymbol }}</strong></td>
+                <td class="text-col">{{ h.exchange }}</td>
+                <td>{{ h.quantity }}</td>
+                <td>{{ h.t1quantity }}</td>
+                <td>{{ formatCurrency(h.averageprice) }}</td>
+                <td>{{ formatCurrency(h.ltp) }}</td>
+                <td [class.text-gain]="h.profitandloss >= 0" [class.text-loss]="h.profitandloss < 0">
+                  {{ h.profitandloss >= 0 ? '+' : '' }}{{ formatCurrency(h.profitandloss) }}
+                </td>
+                <td [class.text-gain]="h.pnlpercentage >= 0" [class.text-loss]="h.pnlpercentage < 0">
+                  {{ h.pnlpercentage >= 0 ? '+' : '' }}{{ formatPct(h.pnlpercentage) }}
+                </td>
+              </tr>
+            }
+            @if (holdings.length === 0) {
+              <tr>
+                <td colspan="8" class="text-col text-secondary" style="text-align:center; padding:var(--space-5)">
+                  No holdings found
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+
+  <!-- Positions Tab -->
+  @if (activeTab === 'positions') {
+    <div class="table-container">
+      @if (loadingPositions) {
+        <div class="loading"><i class="ri-loader-4-line"></i> Loading positions...</div>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Product</th>
+              <th>Net Qty</th>
+              <th>Buy Avg</th>
+              <th>LTP</th>
+              <th>Unrealised</th>
+              <th>Realised</th>
+              <th>Total P&L</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of positions; track p.symboltoken) {
+              <tr>
+                <td><strong>{{ p.tradingsymbol }}</strong></td>
+                <td class="text-col">{{ p.exchange }}</td>
+                <td class="text-col"><span class="strategy-badge">{{ p.producttype }}</span></td>
+                <td [class.text-gain]="p.netqty > 0" [class.text-loss]="p.netqty < 0">{{ p.netqty }}</td>
+                <td>{{ formatCurrency(p.buyavgprice) }}</td>
+                <td>{{ formatCurrency(p.ltp) }}</td>
+                <td [class.text-gain]="p.unrealised >= 0" [class.text-loss]="p.unrealised < 0">
+                  {{ p.unrealised >= 0 ? '+' : '' }}{{ formatCurrency(p.unrealised) }}
+                </td>
+                <td [class.text-gain]="p.realised >= 0" [class.text-loss]="p.realised < 0">
+                  {{ p.realised >= 0 ? '+' : '' }}{{ formatCurrency(p.realised) }}
+                </td>
+                <td [class.text-gain]="p.pnl >= 0" [class.text-loss]="p.pnl < 0">
+                  {{ p.pnl >= 0 ? '+' : '' }}{{ formatCurrency(p.pnl) }}
+                </td>
+              </tr>
+            }
+            @if (positions.length === 0) {
+              <tr>
+                <td colspan="9" class="text-col text-secondary" style="text-align:center; padding:var(--space-5)">
+                  No open positions
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+
+  <!-- Funds Tab -->
+  @if (activeTab === 'funds') {
+    <div class="funds-container">
+      @if (loadingFunds) {
+        <div class="loading"><i class="ri-loader-4-line"></i> Loading fund details...</div>
+      } @else if (funds) {
+        <div class="funds-grid">
+          <div class="fund-section">
+            <div class="fund-section-title"><i class="ri-bank-line"></i> Available</div>
+            <div class="fund-row">
+              <span class="fund-label">Net Balance</span>
+              <span class="fund-value text-gain">₹{{ formatCurrency(funds.net) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Available Cash</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.availablecash) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Intraday Payin</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.availableintradaypayin) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Limit Margin</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.availablelimitmargin) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Collateral</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.collateral) }}</span>
+            </div>
+          </div>
+          <div class="fund-section">
+            <div class="fund-section-title"><i class="ri-pie-chart-line"></i> M2M</div>
+            <div class="fund-row">
+              <span class="fund-label">Unrealized M2M</span>
+              <span class="fund-value" [class.text-gain]="funds.m2munrealized >= 0" [class.text-loss]="funds.m2munrealized < 0">
+                ₹{{ formatCurrency(funds.m2munrealized) }}
+              </span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Realized M2M</span>
+              <span class="fund-value" [class.text-gain]="funds.m2mrealized >= 0" [class.text-loss]="funds.m2mrealized < 0">
+                ₹{{ formatCurrency(funds.m2mrealized) }}
+              </span>
+            </div>
+          </div>
+          <div class="fund-section">
+            <div class="fund-section-title"><i class="ri-arrow-down-circle-line"></i> Utilised</div>
+            <div class="fund-row">
+              <span class="fund-label">Debits</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utiliseddebits) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">SPAN</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedspan) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Option Premium</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedoptionpremium) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Holding Sales</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedholdingsales) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Exposure</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedexposure) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Turnover</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedturnover) }}</span>
+            </div>
+            <div class="fund-row">
+              <span class="fund-label">Payout</span>
+              <span class="fund-value">₹{{ formatCurrency(funds.utilisedpayout) }}</span>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="loading text-secondary">No fund data available</div>
+      }
+    </div>
+  }
+</div>

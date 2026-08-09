@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Repository\ScreenEdge.Repository.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Screener\ScreenEdge.Screener.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Broker\ScreenEdge.Broker.csproj" />
+  </ItemGroup>
+
+</Project>

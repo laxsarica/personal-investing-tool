@@ -1,0 +1,167 @@
+.screener-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 48px); /* Assuming 48px navbar */
+  background: var(--surface);
+}
+
+/* Sidebar */
+.sidebar {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btn-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.btn-reset:hover {
+  background: var(--bg);
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.accordion-header {
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.accordion-header:hover {
+  background: var(--bg);
+}
+
+.accordion-content {
+  padding: 0 var(--space-4) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-value-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.filter-buttons button {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 6px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.filter-buttons button:hover {
+  background: var(--bg);
+}
+
+.filter-buttons button.active-preset {
+  background: var(--text-primary);
+  color: var(--surface);
+  border-color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.btn-add-filter {
+  width: 100%;
+  background: var(--text-primary);
+  color: var(--surface);
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-add-filter:hover {
+  opacity: 0.9;
+}
+
+/* ── Multi-hit Highlights ───────────────────────── */
+
+/* Full row highlight when stock hits BOTH multi-TF AND multi-strategy */
+.row-multi-hit td {
+  background: #fffbeb;
+}
+
+/* TF badge shown next to D or W when stock fires on both timeframes */
+.tf-badge {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #d97706;
+  color: #fff;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
+}
+
+.tf-multi {
+  color: #d97706;
+}
+
+/* Strategy badge glow when stock appears in multiple strategies */
+.badge-multi-strategy {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #7dd3fc;
+}
+
+/* Star dot inside strategy badge */
+.badge-dot {
+  color: #f59e0b;
+  margin-left: 3px;
+  font-size: 10px;
+}
+
+

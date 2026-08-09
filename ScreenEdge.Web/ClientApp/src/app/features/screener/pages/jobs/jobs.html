@@ -1,0 +1,45 @@
+<div class="main-content">
+  <div class="main-header">
+    <div class="main-title">Job Runs</div>
+    <div class="header-actions">
+      <button class="btn-save" (click)="runScreener()" [disabled]="running || loading" style="height: 32px; display: flex; align-items: center; gap: 6px;">
+        <i class="ri-play-line"></i> {{ running ? 'Running...' : 'Run Screener' }}
+      </button>
+      <button class="btn-icon" (click)="loadJobs()" [disabled]="loading" title="Refresh">
+        <i class="ri-refresh-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    @if (loading) {
+      <div class="loading">Loading...</div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Run Date</th>
+            <th>Total Signals</th>
+            <th>Breakdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of jobs; track job.runDate) {
+            <tr>
+              <td>{{ formatDate(job.runDate) }}</td>
+              <td>{{ job.totalSignals }}</td>
+              <td class="text-col">{{ getBreakdown(job) }}</td>
+            </tr>
+          }
+          @if (jobs.length === 0) {
+            <tr>
+              <td colspan="3" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+                No job runs found
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ta.Indicator\Ta.Indicator.csproj" />
+    <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Repository\ScreenEdge.Repository.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

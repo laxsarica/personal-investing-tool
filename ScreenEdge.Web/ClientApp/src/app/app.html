@@ -1,0 +1,22 @@
+@if (authService.isLoggedIn) {
+  <nav class="nav-bar">
+    <div class="container nav-inner">
+      <div class="nav-left">
+        <span class="nav-brand text-heading">ScreenEdge</span>
+        <a routerLink="/screener" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+        <a routerLink="/screener/history" routerLinkActive="active">History</a>
+        <a routerLink="/screener/jobs" routerLinkActive="active">Jobs</a>
+        <a routerLink="/portfolio" routerLinkActive="active">Portfolio</a>
+      </div>
+      <div class="nav-right">
+        <span class="text-secondary">{{ authService.username }}</span>
+        <button class="btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+  <main class="container">
+    <router-outlet />
+  </main>
+} @else {
+  <router-outlet />
+}

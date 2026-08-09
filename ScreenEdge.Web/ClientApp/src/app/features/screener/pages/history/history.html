@@ -1,0 +1,76 @@
+<div class="main-content">
+  <div class="main-header">
+    <div class="main-title">Screener History</div>
+    <div class="header-actions" style="align-items:center;">
+      <input type="date" class="filter-input" style="width:auto" [(ngModel)]="fromDate" placeholder="From">
+      <input type="date" class="filter-input" style="width:auto" [(ngModel)]="toDate" placeholder="To">
+      <select class="filter-input" style="width:auto; padding: 5px;" [(ngModel)]="strategy">
+        <option value="">All Strategies</option>
+        @for (s of strategies; track s) {
+          @if (s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        }
+      </select>
+      <input type="text" class="filter-input" [(ngModel)]="symbol" placeholder="Symbol..." style="width:120px; text-align: left;">
+      <button class="btn-save" (click)="onSearch()" style="height: 32px;"><i class="ri-search-line"></i> Search</button>
+    </div>
+  </div>
+
+  <div class="results-bar">
+    <div class="results-info">
+      <span>Found <strong>{{ totalCount }}</strong> total results</span>
+    </div>
+    <div class="results-actions">
+      @if (totalPages > 1) {
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn-icon" (click)="prevPage()" [disabled]="page <= 1" title="Previous Page"><i class="ri-arrow-left-s-line"></i></button>
+          <span style="font-size:12px; font-weight:500;">Page {{ page }} of {{ totalPages }}</span>
+          <button class="btn-icon" (click)="nextPage()" [disabled]="page >= totalPages" title="Next Page"><i class="ri-arrow-right-s-line"></i></button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="table-container">
+    @if (loading) {
+      <div class="loading">Loading...</div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Strategy</th>
+            <th>TF</th>
+            <th>Price</th>
+            <th>RSI</th>
+            <th>RSI(W)</th>
+            <th>RSI(M)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of results; track r.id) {
+            <tr>
+              <td>{{ formatDate(r.recognizeDate) }}</td>
+              <td><strong>{{ r.symbol }}</strong></td>
+              <td class="text-col"><span class="strategy-badge">{{ r.screenerName }}</span></td>
+              <td class="text-col"><strong>{{ r.timeFrame }}</strong></td>
+              <td>{{ formatPrice(r.recognizedPrice) }}</td>
+              <td>{{ formatRsi(r.rsi) }}</td>
+              <td>{{ formatRsi(r.rsiWeekly) }}</td>
+              <td>{{ formatRsi(r.rsiMonthly) }}</td>
+            </tr>
+          }
+          @if (results.length === 0) {
+            <tr>
+              <td colspan="8" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+                No results found
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
