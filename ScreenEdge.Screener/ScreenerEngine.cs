@@ -292,7 +292,8 @@ public class ScreenerEngine : IScreenerEngine
         double rsiDaily, double rsiWeekly, double rsiMonthly)
     {
         var source = new List<ScreenerEntity>();
-        double threshold = 40.0;
+        double gfsThreshold = 60.0;   // Grandfather + Father must confirm strong uptrend
+        double pullbackThreshold = 40.0; // Son (daily) pullback zone
         try
         {
             if (daily.Count > 365)
@@ -300,9 +301,9 @@ public class ScreenerEngine : IScreenerEngine
                 var rsi5 = new RSI(5) { PriceHistoryList = daily };
                 var dailyRsi5 = rsi5.Calculate().ResultData.TakeLast(2).ToList();
                 
-                if (rsiMonthly > threshold && rsiWeekly > threshold)
+                if (rsiMonthly > gfsThreshold && rsiWeekly > gfsThreshold)
                 {
-                    if (dailyRsi5.Count == 2 && dailyRsi5[0].Value < threshold && dailyRsi5[1].Value > threshold)
+                    if (dailyRsi5.Count == 2 && dailyRsi5[0].Value < pullbackThreshold && dailyRsi5[1].Value > pullbackThreshold)
                     {
                         var s = CreateScreener(symbol, StrategyEnum.RSITTF, "D", daily.Last(), rsiDaily, rsiWeekly, rsiMonthly);
                         s.Rsi = dailyRsi5[1].Value ?? 0;

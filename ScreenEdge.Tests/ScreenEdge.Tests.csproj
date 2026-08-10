@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="8.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
@@ -26,6 +28,7 @@
     <ProjectReference Include="..\Ta.Indicator\Ta.Indicator.csproj" />
     <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
     <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="..\ScreenEdge.Broker\ScreenEdge.Broker.csproj" />
   </ItemGroup>
 
 </Project>
