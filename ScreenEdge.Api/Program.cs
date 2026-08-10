@@ -98,6 +98,13 @@ app.UseHangfireDashboard("/hangfire");
 app.MapControllers();
 
 // Register Hangfire Recurring Jobs
+
+// Remove legacy standalone jobs — these are redundant since the workflow below handles both steps.
+// The underlying methods are kept and can still be triggered manually from the Hangfire Dashboard.
+RecurringJob.RemoveIfExists("daily-data-sync");
+RecurringJob.RemoveIfExists("daily-screener-run");
+
+// Single authoritative daily job: sync data → run screener (Mon–Fri, 6:30 AM IST)
 RecurringJob.AddOrUpdate<ScreenerJob>(
     "daily-screener-workflow",
     job => job.RunDailyWorkflowAsync(),
