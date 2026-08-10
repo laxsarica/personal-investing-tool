@@ -41,7 +41,7 @@ export class DashboardComponent implements OnInit {
     rsiMonthly: false
   };
 
-  strategies = ['All', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA'];
+  strategies = ['All', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT'];
   timeFrames = ['All', 'D', 'W'];
 
   constructor(private screenerService: ScreenerService) {}

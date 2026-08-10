@@ -7,5 +7,6 @@ public enum StrategyEnum
     SUPPORTRESISTANCE,
     RSIWMA,
     RSITTF,
-    RSIFULL
+    RSIFULL,
+    UPTRENDBOT
 }

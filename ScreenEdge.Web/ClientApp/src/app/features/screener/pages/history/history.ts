@@ -23,7 +23,7 @@ export class HistoryComponent implements OnInit {
   strategy = '';
   symbol = '';
 
-  strategies = ['', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA'];
+  strategies = ['', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT'];
 
   constructor(private screenerService: ScreenerService) {}
 

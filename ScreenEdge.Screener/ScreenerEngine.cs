@@ -7,6 +7,7 @@ using ScreenEdge.Entity;
 using Ta.CustomIndicator.BreakOut;
 using Ta.CustomIndicator.EmaFifty;
 using Ta.CustomIndicator.RsiWma;
+using Ta.CustomIndicator.UptrendBot;
 using Ta.CustomIndicator.ZeroLag;
 using Ta.Indicator.Base;
 using Ta.Indicator.BaseFunction;
@@ -100,6 +101,9 @@ public class ScreenerEngine : IScreenerEngine
 
                 foreach (var s in FullRsiScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
                     screeners.Add(s);
+
+                foreach (var s in UptrendBotScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
+                    screeners.Add(s);
             }
             catch (Exception ex)
             {
@@ -159,6 +163,45 @@ public class ScreenerEngine : IScreenerEngine
         rsi.PriceHistoryList = priceHistories;
         var lastValue = rsi.Calculate().ResultData.LastOrDefault()?.Value;
         return lastValue.GetValueOrDefault();
+    }
+
+    private static List<ScreenerEntity> UptrendBotScreener(
+        string symbol, List<PriceHistory> daily, List<PriceHistory> weekly,
+        double rsiDaily, double rsiWeekly, double rsiMonthly)
+    {
+        var source = new List<ScreenerEntity>();
+        try
+        {
+            var uptrendBot = new UptrendBotIndicator { AtrPeriod = 11, Sensitivity = 2.0 };
+
+            // Weekly scan
+            var weeklyResults = uptrendBot.Calculate(weekly).TakeLast(1).ToList();
+            if (weeklyResults.Count == 1 && rsiWeekly > 55.0)
+            {
+                var priceHistory = weekly.Last();
+                if (weeklyResults[0].BuySignal)
+                {
+                    source.Add(CreateScreener(symbol, StrategyEnum.UPTRENDBOT, "W",
+                        priceHistory, rsiDaily, rsiWeekly, rsiMonthly));
+                }
+            }
+
+            // Daily scan
+            var uptrendBotDaily = new UptrendBotIndicator { AtrPeriod = 11, Sensitivity = 2.0 };
+            var dailyResults = uptrendBotDaily.Calculate(daily).TakeLast(1).ToList();
+            if (dailyResults.Count == 1 && rsiDaily > 55.0)
+            {
+                var priceHistory = daily.Last();
+                if (dailyResults[0].BuySignal)
+                {
+                    source.Add(CreateScreener(symbol, StrategyEnum.UPTRENDBOT, "D",
+                        priceHistory, rsiDaily, rsiWeekly, rsiMonthly));
+                }
+            }
+        }
+        catch (Exception) { }
+
+        return source.Where(w => w.Rsi >= 55.0 && w.Rsi <= 70.0).ToList();
     }
 
     private static List<ScreenerEntity> ZeroLagScreener(
