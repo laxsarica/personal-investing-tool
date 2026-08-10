@@ -99,15 +99,9 @@ app.MapControllers();
 
 // Register Hangfire Recurring Jobs
 RecurringJob.AddOrUpdate<ScreenerJob>(
-    "daily-data-sync",
-    job => job.RunDailyDataSyncAsync(),
+    "daily-screener-workflow",
+    job => job.RunDailyWorkflowAsync(),
     "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
-);
-
-RecurringJob.AddOrUpdate<ScreenerJob>(
-    "daily-screener-run",
-    job => job.RunScreenerOnlyAsync(),
-    "30 1 * * 1-5" // 7:00 AM IST (1:30 AM UTC), Monday to Friday
 );
 
 app.Run();

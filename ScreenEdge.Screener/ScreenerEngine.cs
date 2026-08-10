@@ -113,6 +113,19 @@ public class ScreenerEngine : IScreenerEngine
         using (var scope = _scopeFactory.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            // Delete ALL existing screener results for today to prevent duplicates
+            var today = DateTime.Today;
+            var existingScreeners = await context.Screeners
+                .Where(s => s.RecognizeDate == today)
+                .ToListAsync();
+            if (existingScreeners.Count > 0)
+            {
+                context.Screeners.RemoveRange(existingScreeners);
+                _logger.LogInformation("Removed {Count} existing screener records for {Date}.",
+                    existingScreeners.Count, today);
+            }
+
             context.Screeners.AddRange(validResults);
             await context.SaveChangesAsync();
         }

@@ -34,6 +34,8 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => e.Symbol);
             entity.HasIndex(e => e.ScreenerName);
             entity.HasIndex(e => e.RecognizeDate);
+            entity.HasIndex(e => new { e.Symbol, e.ScreenerName, e.TimeFrame, e.RecognizeDate })
+                  .IsUnique();
         });
     }
 }

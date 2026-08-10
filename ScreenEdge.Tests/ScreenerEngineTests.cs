@@ -51,7 +51,7 @@ public class ScreenerEngineTests
         using var context = new AppDbContext(options);
         
         // Add distinct stock
-        context.DistinctStocks.Add(new DistinctStock { Symbol = "TEST", Exchange = "NSE" });
+        context.DistinctStocks.Add(new DistinctStock { Symbol = "TEST", Exchange = "NSE", TotalTradingDays = 25 });
         
         // Add only 10 days of history (engine needs > 30)
         var date = new DateTime(2025, 1, 1);

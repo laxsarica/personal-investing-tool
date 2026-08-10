@@ -54,11 +54,22 @@ public class DataIngestionService
                         var entities = response.data.fetched.Where(HasVolume).Select(ToTicker).ToList();
                         if (entities.Count > 0)
                         {
+                            // Filter out symbols that already have data for today to prevent duplicates
+                            var todayDate = entities.First().Date;
+                            var symbolsInBatch = entities.Select(e => e.Symbol).Distinct().ToList();
+                            var alreadyIngested = _uow.TickerHistoryRepository.Query()
+                                .Where(x => x.Date == todayDate && symbolsInBatch.Contains(x.Symbol))
+                                .Select(x => x.Symbol)
+                                .ToHashSet();
+
+                            entities = entities.Where(e => !alreadyIngested.Contains(e.Symbol)).ToList();
+                            if (entities.Count == 0) continue; // All already ingested, skip batch
+
                             await _uow.TickerHistoryRepository.AddRangeAsync(entities);
                             await _uow.CompleteAsync();
                             totalInserted += entities.Count;
                             
-                            // Also ensure these stocks exist in DistinctStocks and increment their trading days
+                            // Only update TotalTradingDays for newly inserted symbols
                             var distinctStocks = entities.Select(e => e.Symbol).Distinct();
                             foreach(var sym in distinctStocks)
                             {
@@ -249,6 +260,20 @@ public class DataIngestionService
                          $"Successful symbols: {successCount}, Failed symbols: {failureCount}.";
         _logger.LogInformation(summary);
         return summary;
+    }
+
+    /// <summary>
+    /// Returns the most recent date in TickerHistories. Used by the daily job
+    /// to detect whether fresh market data was received (holiday guard).
+    /// </summary>
+    public DateTime? GetLatestTickerDate()
+    {
+        var latest = _uow.TickerHistoryRepository.Query()
+            .OrderByDescending(x => x.Date)
+            .Select(x => x.Date)
+            .FirstOrDefault();
+
+        return latest == default ? null : latest;
     }
 
     private static bool HasVolume(Fetched f) => long.TryParse(f.tradeVolume.ToString(), out long vol) && vol > 0;

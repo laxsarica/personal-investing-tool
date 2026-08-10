@@ -23,6 +23,15 @@ public class ScreenerJob
     [AutomaticRetry(Attempts = 3)]
     public async Task RunDailyWorkflowAsync()
     {
+        // Weekend guard — market is never open on Sat/Sun
+        var today = DateTime.Today;
+        if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            _logger.LogInformation("Skipping daily workflow — {Date} ({Day}) is a weekend.",
+                today, today.DayOfWeek);
+            return;
+        }
+
         _logger.LogInformation("Starting daily workflow (Sync Data -> Run Screener).");
         
         try
@@ -30,6 +39,16 @@ public class ScreenerJob
             // 1. Sync daily data
             _logger.LogInformation("Step 1: Syncing daily data...");
             await _dataIngestionService.SyncDailyDataAsync();
+
+            // Holiday guard — check if fresh data was actually received for today
+            var latestDate = _dataIngestionService.GetLatestTickerDate();
+            if (latestDate.HasValue && latestDate.Value.Date < today)
+            {
+                _logger.LogInformation(
+                    "Skipping screener — latest ticker data is {LatestDate}, not today ({Today}). Market likely closed (holiday).",
+                    latestDate.Value.Date, today);
+                return;
+            }
 
             // 2. Run screener
             _logger.LogInformation("Step 2: Running screener engine...");
