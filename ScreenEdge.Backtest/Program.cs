@@ -16,6 +16,7 @@ string command = args.Length > 0 ? args[0].ToLower() : "run";
 var gridSearchEngine = new GridSearchEngine(connectionString);
 var historicalEngine = new HistoricalBacktestEngine(connectionString);
 var wealthEngine = new WealthCreationBacktestEngine(connectionString);
+var allStrategiesEngine = new AllStrategiesBacktestEngine(connectionString);
 var reportWriter = new MarkdownReportWriter(outputDir);
 var dataExporter = new DataExporter(outputDir);
 
@@ -31,6 +32,10 @@ switch (command)
 
     case "wealth":
         await RunWealth();
+        break;
+
+    case "scan-all":
+        await RunAllStrategies();
         break;
 
     case "all":
@@ -51,8 +56,10 @@ switch (command)
         Console.WriteLine("  run       — Scan ALL stocks through full history and backtest RSITTF");
         Console.WriteLine("  optimize  — Grid search RSITTF thresholds over full history");
         Console.WriteLine("  wealth    — Backtest the Wealth Creation strategy (Weekly RSI 60 cross, EMA50 exit)");
-        Console.WriteLine("  ai-train  — Train ML.NET model on wealth creation backtest data");
-        Console.WriteLine("  all       — Run both");
+        Console.WriteLine("  scan-all  — Backtest ALL strategies (except FullRsi) and output unified dataset");
+        Console.WriteLine("  ai-train  — Train ML.NET model on the unified backtest data");
+        Console.WriteLine("  ai-test   — Test ML.NET model on recent unified signals");
+        Console.WriteLine("  all       — Run both run and optimize");
         break;
 }
 
@@ -118,17 +125,31 @@ async Task RunWealth()
     }
 }
 
+async Task RunAllStrategies()
+{
+    Console.WriteLine("\n[Scan All] Running unified backtest across all strategies...\n");
+
+    var result = await allStrategiesEngine.RunAsync();
+
+    Console.WriteLine("\nWriting reports...");
+    await reportWriter.WriteLeaderboardAsync(result);
+    await dataExporter.ExportJsonAsync(result.Results, "historical_all_strategies_data");
+    await dataExporter.ExportCsvAsync(result.Results, "historical_all_strategies_data");
+
+    Console.WriteLine($"\n  Total signals: {result.TotalSignals}");
+}
+
 void RunAiTrain()
 {
     Console.WriteLine("\n[AI Train] Training ML.NET Model...\n");
-    string csvPath = Path.Combine(outputDir, "2026-08-11_historical_wealth_data.csv");
+    string csvPath = Path.Combine(outputDir, $"{DateTime.Now:yyyy-MM-dd}_historical_all_strategies_data.csv");
     ModelBuilder.TrainModel(csvPath);
 }
 
 void RunAiTest()
 {
     Console.WriteLine("\n[AI Test] Predicting recent signals (July 31 and Aug 7)...\n");
-    string csvPath = Path.Combine(outputDir, "2026-08-11_historical_wealth_data.csv");
+    string csvPath = Path.Combine(outputDir, $"{DateTime.Now:yyyy-MM-dd}_historical_all_strategies_data.csv");
     
     using var fs = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     using var sr = new StreamReader(fs);

@@ -32,9 +32,13 @@ public class ModelBuilder
         var split = mlContext.Data.TrainTestSplit(trainingDataView, testFraction: 0.2);
 
         // 2. Build Pipeline
-        // Features we want to use: RsiWeekly, Volume, EntryPrice
+        // Features we want to use: Strategy (OneHot), TimeFrame (OneHot), RsiWeekly, Volume, EntryPrice
         var pipeline = mlContext.Transforms.Conversion.ConvertType(nameof(ScreenerModelInput.IsWin), outputKind: DataKind.Boolean)
+            .Append(mlContext.Transforms.Categorical.OneHotEncoding("StrategyEncoded", nameof(ScreenerModelInput.Strategy)))
+            .Append(mlContext.Transforms.Categorical.OneHotEncoding("TimeFrameEncoded", nameof(ScreenerModelInput.TimeFrame)))
             .Append(mlContext.Transforms.Concatenate("Features", 
+                "StrategyEncoded",
+                "TimeFrameEncoded",
                 nameof(ScreenerModelInput.RsiWeekly), 
                 nameof(ScreenerModelInput.Volume),
                 nameof(ScreenerModelInput.EntryPrice)))
@@ -93,10 +97,7 @@ public class ModelBuilder
                 IsWin = outcome == "Win"
             };
             
-            if (input.Strategy == "WealthCreation")
-            {
-                list.Add(input);
-            }
+            list.Add(input);
         }
         
         return list;
