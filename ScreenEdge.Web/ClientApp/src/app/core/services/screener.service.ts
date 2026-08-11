@@ -10,7 +10,7 @@ export class ScreenerService {
   constructor(private http: HttpClient) {}
 
   runScreener(): Observable<ScreenerJobResult> {
-    return this.http.post<ScreenerJobResult>(`${this.API_URL}/run`, {});
+    return this.http.post<ScreenerJobResult>(`${this.API_URL}/run-all`, {});
   }
 
   getResults(strategy?: string, timeFrame?: string): Observable<ScreenerResult[]> {

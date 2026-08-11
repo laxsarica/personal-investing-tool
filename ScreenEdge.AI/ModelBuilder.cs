@@ -10,7 +10,7 @@ namespace ScreenEdge.AI;
 
 public class ModelBuilder
 {
-    public static string ModelPath = Path.Combine(Environment.CurrentDirectory, "ScreenerModel.zip");
+    public static string ModelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ScreenerModel.zip");
 
     public static void TrainModel(string csvPath)
     {

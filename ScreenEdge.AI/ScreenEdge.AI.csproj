@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -15,6 +15,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\ScreenerModel.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
