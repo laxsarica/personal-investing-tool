@@ -13,4 +13,5 @@ public class Screener
     public long Volume { get; set; }
     public double RecognizedPrice { get; set; }
     public string Pattern { get; set; } = string.Empty;
+    public double? AiScore { get; set; }
 }

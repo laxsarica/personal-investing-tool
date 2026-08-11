@@ -403,6 +403,27 @@ public class ScreenerEngine : IScreenerEngine
                     if (lastResult.BuySignal)
                     {
                         var s = CreateScreener(symbol, StrategyEnum.WEALTHCREATION, "D", daily.Last(), rsiDaily, rsiWeekly, rsiMonthly);
+                        try
+                        {
+                            var input = new ScreenEdge.AI.ScreenerModelInput
+                            {
+                                Symbol = s.Symbol,
+                                Strategy = s.ScreenerName,
+                                TimeFrame = s.TimeFrame,
+                                SignalDate = s.RecognizeDate.ToString("yyyy-MM-dd"),
+                                EntryPrice = (float)s.RecognizedPrice,
+                                RsiDaily = (float)s.Rsi,
+                                RsiWeekly = (float)s.RsiWeekly,
+                                RsiMonthly = (float)s.RsiMonthly,
+                                Volume = (float)s.Volume
+                            };
+                            var prediction = ScreenEdge.AI.ModelBuilder.Predict(input);
+                            s.AiScore = Math.Round(prediction.Probability * 100.0, 2);
+                        }
+                        catch
+                        {
+                            // ignore ML error
+                        }
                         source.Add(s);
                     }
                 }

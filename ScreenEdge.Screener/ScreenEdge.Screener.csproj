@@ -5,6 +5,7 @@
     <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
     <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
     <ProjectReference Include="..\ScreenEdge.Repository\ScreenEdge.Repository.csproj" />
+    <ProjectReference Include="..\ScreenEdge.AI\ScreenEdge.AI.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
