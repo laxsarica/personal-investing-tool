@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenEdge.Tests", "ScreenE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenEdge.Broker", "ScreenEdge.Broker\ScreenEdge.Broker.csproj", "{B208D3C0-8E90-4E8A-80A6-82DA04364EED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenEdge.Backtest", "ScreenEdge.Backtest\ScreenEdge.Backtest.csproj", "{36EB46AA-6746-4440-8572-EA19393E5302}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,18 @@ Global
 		{B208D3C0-8E90-4E8A-80A6-82DA04364EED}.Release|x64.Build.0 = Release|Any CPU
 		{B208D3C0-8E90-4E8A-80A6-82DA04364EED}.Release|x86.ActiveCfg = Release|Any CPU
 		{B208D3C0-8E90-4E8A-80A6-82DA04364EED}.Release|x86.Build.0 = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|x64.Build.0 = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Debug|x86.Build.0 = Debug|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|x64.ActiveCfg = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|x64.Build.0 = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|x86.ActiveCfg = Release|Any CPU
+		{36EB46AA-6746-4440-8572-EA19393E5302}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
