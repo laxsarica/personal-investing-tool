@@ -45,8 +45,8 @@
             <th>TF</th>
             <th>Price</th>
             <th>RSI</th>
-            <th>RSI(W)</th>
             <th>RSI(M)</th>
+            <th>AI Score</th>
           </tr>
         </thead>
         <tbody>
@@ -60,11 +60,20 @@
               <td>{{ formatRsi(r.rsi) }}</td>
               <td>{{ formatRsi(r.rsiWeekly) }}</td>
               <td>{{ formatRsi(r.rsiMonthly) }}</td>
+              <td>
+                @if (r.aiScore != null) {
+                  <span [style.color]="r.aiScore > 50 ? 'var(--text-success)' : 'var(--text-secondary)'">
+                    {{ r.aiScore }}%
+                  </span>
+                } @else {
+                  <span class="text-secondary">-</span>
+                }
+              </td>
             </tr>
           }
           @if (results.length === 0) {
             <tr>
-              <td colspan="8" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+              <td colspan="9" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
                 No results found
               </td>
             </tr>
