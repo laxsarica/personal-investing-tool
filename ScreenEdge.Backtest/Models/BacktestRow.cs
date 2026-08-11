@@ -20,4 +20,8 @@ public class BacktestRow
     public double MaxDrawdown { get; set; }
     public double MaxGain { get; set; }
     public string Outcome { get; set; } = string.Empty;
+    public DateTime? ExitDate { get; set; }
+    public double? ExitPrice { get; set; }
+    public int? DaysHeld { get; set; }
+    public double? RealizedReturn { get; set; }
 }

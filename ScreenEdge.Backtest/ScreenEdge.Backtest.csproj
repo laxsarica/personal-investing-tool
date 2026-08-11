@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
     <ProjectReference Include="..\Ta.Indicator\Ta.Indicator.csproj" />
+    <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
   </ItemGroup>
 
 </Project>

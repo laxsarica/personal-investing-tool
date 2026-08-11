@@ -9,7 +9,7 @@ namespace ScreenEdge.Backtest.Reports;
 /// </summary>
 public class MarkdownReportWriter
 {
-    private readonly string _outputDir;
+    private readonly string _outputDir; 
     private readonly string _datePrefix;
 
     public MarkdownReportWriter(string outputDir)
@@ -33,8 +33,8 @@ public class MarkdownReportWriter
         sb.AppendLine();
 
         // Leaderboard table
-        sb.AppendLine("| Rank | Strategy | Signals | Wins | Loss | Neutral | WinRate | Avg5D% | Avg10D% | Avg20D% | AvgDD% | AvgGain% | Rating |");
-        sb.AppendLine("|------|----------|---------|------|------|---------|---------|--------|---------|---------|--------|----------|--------|");
+        sb.AppendLine("| Rank | Strategy | Signals | Wins | Loss | Open | RawWin% | DecWin% | AvgDays | Realized% | AvgDD% | AvgGain% | Rating |");
+        sb.AppendLine("|------|----------|---------|------|------|------|---------|---------|---------|-----------|--------|----------|--------|");
 
         var ranked = jobResult.StrategyBreakdown
             .OrderByDescending(kv => kv.Value.WinRate)
@@ -46,8 +46,8 @@ public class MarkdownReportWriter
             string stars = new string('★', stats.Stars) + new string('☆', 5 - stats.Stars);
             sb.AppendLine(
                 $"| {rank} | {strategy} | {stats.Total} | {stats.Wins} | {stats.Losses} | {stats.Neutral} | " +
-                $"{stats.WinRate:F1}% | {stats.AvgReturn5D:+0.00;-0.00}% | {stats.AvgReturn10D:+0.00;-0.00}% | " +
-                $"{stats.AvgReturn20D:+0.00;-0.00}% | {stats.AvgMaxDrawdown:F2}% | {stats.AvgMaxGain:+0.00;-0.00}% | {stars} |");
+                $"{stats.WinRate:F1}% | {stats.DecisiveWinRate:F1}% | {stats.AvgDaysHeld:F1} | {stats.AvgRealizedReturn:+0.00;-0.00}% | " +
+                $"{stats.AvgMaxDrawdown:F2}% | {stats.AvgMaxGain:+0.00;-0.00}% | {stars} |");
             rank++;
         }
 
@@ -117,16 +117,20 @@ public class MarkdownReportWriter
         // All Signals
         sb.AppendLine("## All Signals");
         sb.AppendLine();
-        sb.AppendLine("| Symbol | Signal Date | TF | Entry Price | RSI-D | RSI-W | RSI-M | Volume | 5D% | 10D% | 20D% | 40D% | MaxDD% | MaxGain% | Outcome |");
-        sb.AppendLine("|--------|-------------|-----|-------------|-------|-------|-------|--------|-----|------|------|------|--------|----------|---------|");
+        sb.AppendLine("| Date | Symbol | Entry | Exit Date | Exit Price | Days Held | Realized% | MaxGain% | MaxDD% | Outcome |");
+        sb.AppendLine("|------|--------|-------|-----------|------------|-----------|-----------|----------|--------|---------|");
 
         foreach (var r in results.OrderBy(r => r.SignalDate))
         {
+            string outcome = r.Outcome;
+            string exitDate = r.ExitDate.HasValue ? r.ExitDate.Value.ToString("yyyy-MM-dd") : "-";
+            string exitPrice = r.ExitPrice.HasValue ? r.ExitPrice.Value.ToString("F2") : "-";
+            string daysHeld = r.DaysHeld.HasValue ? r.DaysHeld.Value.ToString() : "-";
+            string realized = r.RealizedReturn.HasValue ? $"{r.RealizedReturn.Value:+0.00;-0.00}%" : "-";
+
             sb.AppendLine(
-                $"| {r.Symbol} | {r.SignalDate:yyyy-MM-dd} | {r.TimeFrame} | {r.EntryPrice:F2} | " +
-                $"{r.RsiDaily:F1} | {r.RsiWeekly:F1} | {r.RsiMonthly:F1} | {r.Volume:N0} | " +
-                $"{r.Return5D:+0.00;-0.00} | {r.Return10D:+0.00;-0.00} | {r.Return20D:+0.00;-0.00} | {r.Return40D:+0.00;-0.00} | " +
-                $"{r.MaxDrawdown:F2} | {r.MaxGain:+0.00;-0.00} | {r.Outcome} |");
+                $"| {r.SignalDate:yyyy-MM-dd} | {r.Symbol} | {r.EntryPrice:F2} | {exitDate} | {exitPrice} | {daysHeld} | " +
+                $"{realized} | {r.MaxGain:F2}% | {r.MaxDrawdown:F2}% | **{outcome}** |");
         }
 
         var path = Path.Combine(_outputDir, $"{_datePrefix}_{strategyName}_detail.md");
@@ -149,8 +153,8 @@ public class MarkdownReportWriter
 
         sb.AppendLine("## Top Parameter Sets");
         sb.AppendLine();
-        sb.AppendLine("| Rank | Monthly> | Weekly> | Pullback Zone | Signals | Wins | Losses | WinRate | AvgReturn% |");
-        sb.AppendLine("|------|----------|---------|---------------|---------|------|--------|---------|------------|");
+        sb.AppendLine("| Rank | Monthly> | Weekly> | Pullback Zone | Signals | Wins | Losses | RawWin% | DecWin% | AvgReturn% |");
+        sb.AppendLine("|------|----------|---------|---------------|---------|------|--------|---------|---------|------------|");
 
         for (int i = 0; i < results.Count; i++)
         {
@@ -158,7 +162,7 @@ public class MarkdownReportWriter
             sb.AppendLine(
                 $"| {i + 1} | {r.MonthlyThreshold:F0} | {r.WeeklyThreshold:F0} | " +
                 $"{r.PullbackLow:F0}–{r.PullbackHigh:F0} | " +
-                $"{r.TotalSignals} | {r.Wins} | {r.Losses} | {r.WinRate:F1}% | {r.AvgReturn:+0.00;-0.00}% |");
+                $"{r.TotalSignals} | {r.Wins} | {r.Losses} | {r.WinRate:F1}% | {r.DecisiveWinRate:F1}% | {r.AvgReturn:+0.00;-0.00}% |");
         }
 
         if (results.Count > 0)

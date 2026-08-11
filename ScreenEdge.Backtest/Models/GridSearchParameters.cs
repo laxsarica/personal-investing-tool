@@ -25,5 +25,5 @@ public class GridSearchParameters
     /// <summary>
     /// Number of top parameter sets to include in the report.
     /// </summary>
-    public int TopN { get; set; } = 20;
+    public int TopN { get; set; } = 1000;
 }

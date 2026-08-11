@@ -8,6 +8,7 @@ using Ta.CustomIndicator.BreakOut;
 using Ta.CustomIndicator.EmaFifty;
 using Ta.CustomIndicator.RsiWma;
 using Ta.CustomIndicator.UptrendBot;
+using Ta.CustomIndicator.WealthCreation;
 using Ta.CustomIndicator.ZeroLag;
 using Ta.Indicator.Base;
 using Ta.Indicator.BaseFunction;
@@ -104,6 +105,9 @@ public class ScreenerEngine : IScreenerEngine
 
                 foreach (var s in UptrendBotScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
                     screeners.Add(s);
+
+                foreach (var s in WealthCreationScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                    screeners.Add(s);
             }
             catch (Exception ex)
             {
@@ -118,16 +122,16 @@ public class ScreenerEngine : IScreenerEngine
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Delete ALL existing screener results for today to prevent duplicates
-            var today = DateTime.Today;
+            // Delete ALL existing screener results for the dates we are inserting to prevent duplicates
+            var datesToDelete = validResults.Select(x => x.RecognizeDate).Distinct().ToList();
             var existingScreeners = await context.Screeners
-                .Where(s => s.RecognizeDate == today)
+                .Where(s => datesToDelete.Contains(s.RecognizeDate))
                 .ToListAsync();
             if (existingScreeners.Count > 0)
             {
                 context.Screeners.RemoveRange(existingScreeners);
-                _logger.LogInformation("Removed {Count} existing screener records for {Date}.",
-                    existingScreeners.Count, today);
+                _logger.LogInformation("Removed {Count} existing screener records for the processed dates.",
+                    existingScreeners.Count);
             }
 
             context.Screeners.AddRange(validResults);
@@ -341,15 +345,15 @@ public class ScreenerEngine : IScreenerEngine
         {
             if (daily.Count > 365)
             {
-                var rsi5 = new RSI(5) { PriceHistoryList = daily };
-                var dailyRsi5 = rsi5.Calculate().ResultData.TakeLast(2).ToList();
+                var rsi14Son = new RSI(14) { PriceHistoryList = daily };
+                var dailyRsi14Son = rsi14Son.Calculate().ResultData.TakeLast(2).ToList();
                 
                 if (rsiMonthly > gfsThreshold && rsiWeekly > gfsThreshold)
                 {
-                    if (dailyRsi5.Count == 2 && dailyRsi5[0].Value < pullbackThreshold && dailyRsi5[1].Value > pullbackThreshold)
+                    if (dailyRsi14Son.Count == 2 && dailyRsi14Son[0].Value < pullbackThreshold && dailyRsi14Son[1].Value > pullbackThreshold)
                     {
                         var s = CreateScreener(symbol, StrategyEnum.RSITTF, "D", daily.Last(), rsiDaily, rsiWeekly, rsiMonthly);
-                        s.Rsi = dailyRsi5[1].Value ?? 0;
+                        s.Rsi = dailyRsi14Son[1].Value ?? 0;
                         source.Add(s);
                     }
                 }
@@ -375,6 +379,32 @@ public class ScreenerEngine : IScreenerEngine
                     var s = CreateScreener(symbol, StrategyEnum.RSIFULL, "D", daily.Last(), rsiDaily, rsiWeekly, rsiMonthly);
                     s.Pattern = pattern;
                     source.Add(s);
+                }
+            }
+        }
+        catch (Exception) { }
+        return source;
+    }
+
+    private static List<ScreenerEntity> WealthCreationScreener(
+        string symbol, List<PriceHistory> daily, 
+        double rsiDaily, double rsiWeekly, double rsiMonthly)
+    {
+        var source = new List<ScreenerEntity>();
+        try
+        {
+            if (daily.Count > 200)
+            {
+                var indicator = new WealthCreationIndicator();
+                var results = indicator.Calculate(daily);
+                if (results.Count > 0)
+                {
+                    var lastResult = results.Last();
+                    if (lastResult.BuySignal)
+                    {
+                        var s = CreateScreener(symbol, StrategyEnum.WEALTHCREATION, "D", daily.Last(), rsiDaily, rsiWeekly, rsiMonthly);
+                        source.Add(s);
+                    }
                 }
             }
         }

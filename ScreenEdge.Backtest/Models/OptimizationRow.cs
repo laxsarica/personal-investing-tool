@@ -10,5 +10,6 @@ public class OptimizationRow
     public int Wins { get; set; }
     public int Losses { get; set; }
     public double WinRate { get; set; }
+    public double DecisiveWinRate { get; set; }
     public double AvgReturn { get; set; }
 }
