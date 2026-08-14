@@ -1,11 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Ta.Indicator\Ta.Indicator.csproj" />
     <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
     <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
     <ProjectReference Include="..\ScreenEdge.Repository\ScreenEdge.Repository.csproj" />
-    <ProjectReference Include="..\ScreenEdge.AI\ScreenEdge.AI.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

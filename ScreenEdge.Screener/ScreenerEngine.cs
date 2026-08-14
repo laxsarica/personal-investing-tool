@@ -116,33 +116,8 @@ public class ScreenerEngine : IScreenerEngine
             }
         });
 
-        // Persist results
-        // Apply AI Score to all valid results before saving
+    // Persist results
         var validResults = screeners.Where(x => x != null).ToList();
-        foreach (var s in validResults)
-        {
-            try
-            {
-                var input = new ScreenEdge.AI.ScreenerModelInput
-                {
-                    Symbol = s.Symbol,
-                    Strategy = s.ScreenerName,
-                    TimeFrame = s.TimeFrame,
-                    SignalDate = s.RecognizeDate.ToString("yyyy-MM-dd"),
-                    EntryPrice = (float)s.RecognizedPrice,
-                    RsiDaily = (float)s.Rsi,
-                    RsiWeekly = (float)s.RsiWeekly,
-                    RsiMonthly = (float)s.RsiMonthly,
-                    Volume = (float)s.Volume
-                };
-                var prediction = ScreenEdge.AI.ModelBuilder.Predict(input);
-                s.AiScore = Math.Round(prediction.Probability * 100.0, 2);
-            }
-            catch
-            {
-                // ignore ML error
-            }
-        }
 
         using (var scope = _scopeFactory.CreateScope())
         {
