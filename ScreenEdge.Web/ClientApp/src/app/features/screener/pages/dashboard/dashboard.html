@@ -168,9 +168,6 @@
               <th [class.sort-active]="sortColumn === 'volume'" (click)="sort('volume')">
                 Volume
               </th>
-              <th [class.sort-active]="sortColumn === 'aiScore'" (click)="sort('aiScore')">
-                AI Score
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -193,20 +190,11 @@
                 <td>{{ formatRsi(r.rsiWeekly) }}</td>
                 <td>{{ formatRsi(r.rsiMonthly) }}</td>
                 <td>{{ formatVolume(r.volume) }}</td>
-                <td>
-                  @if (r.aiScore != null) {
-                    <span [style.color]="r.aiScore > 50 ? 'var(--text-success)' : 'var(--text-secondary)'">
-                      {{ r.aiScore }}%
-                    </span>
-                  } @else {
-                    <span class="text-secondary">-</span>
-                  }
-                </td>
               </tr>
             }
             @if (filteredResults.length === 0) {
               <tr>
-                <td colspan="10" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+                <td colspan="9" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
                   No results found
                 </td>
               </tr>

@@ -19,7 +19,6 @@ export interface ScreenerResult {
   rsiMonthly: number;
   volume: number;
   recognizedPrice: number;
-  aiScore?: number;
 }
 
 export interface ScreenerHistoryResponse {
