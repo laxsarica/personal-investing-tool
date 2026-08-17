@@ -14,7 +14,10 @@ using ScreenEdge.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Yahoo Finance HTTP Client mapping (if needed, but NuGet uses static methods mostly)
+// Register IHttpClientFactory (used by NewsController to proxy TradingView news)
+builder.Services.AddHttpClient();
+
+// Add Yahoo Finance service (uses static YahooFinanceApi library - no HttpClient needed)
 builder.Services.AddScoped<YahooFinanceService>();
 
 // EF Core
