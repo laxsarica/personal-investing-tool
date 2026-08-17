@@ -14,6 +14,9 @@ using ScreenEdge.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Yahoo Finance HTTP Client mapping (if needed, but NuGet uses static methods mostly)
+builder.Services.AddScoped<YahooFinanceService>();
+
 // EF Core
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -99,10 +102,10 @@ app.MapControllers();
 
 // Register Hangfire Recurring Jobs
 
-// Remove legacy standalone jobs — these are redundant since the workflow below handles both steps.
-// The underlying methods are kept and can still be triggered manually from the Hangfire Dashboard.
+// Remove legacy standalone jobs
 RecurringJob.RemoveIfExists("daily-data-sync");
 RecurringJob.RemoveIfExists("daily-screener-run");
+RecurringJob.RemoveIfExists("weekly-finnhub-sync"); // Replaced by Yahoo Finance
 
 // Single authoritative daily job: sync data → run screener (Mon–Fri, 6:30 AM IST)
 RecurringJob.AddOrUpdate<ScreenerJob>(
@@ -110,5 +113,11 @@ RecurringJob.AddOrUpdate<ScreenerJob>(
     job => job.RunDailyWorkflowAsync(),
     "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
 );
+
+RecurringJob.AddOrUpdate<FundamentalsSyncJob>(
+    "weekly-fundamentals-sync", 
+    x => x.SyncFundamentalsAsync(), 
+    Cron.Weekly(DayOfWeek.Saturday, 2)
+); // Runs every Saturday at 2 AM UTC
 
 app.Run();

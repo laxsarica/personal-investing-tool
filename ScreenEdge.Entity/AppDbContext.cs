@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
 
     public DbSet<TickerHistory> TickerHistories { get; set; }
     public DbSet<DistinctStock> DistinctStocks { get; set; }
+    public DbSet<StockFundamental> StockFundamentals { get; set; }
     public DbSet<Screener> Screeners { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +27,11 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Symbol).IsUnique();
+            
+            entity.HasOne(d => d.Fundamental)
+                  .WithOne(p => p.DistinctStock)
+                  .HasForeignKey<StockFundamental>(d => d.DistinctStockId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Screener>(entity =>

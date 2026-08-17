@@ -13,14 +13,14 @@
         <i [ngClass]="expandedSections['strategy'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
       </div>
       @if (expandedSections['strategy']) {
-        <div class="accordion-content">
-          @for (s of strategies; track s) {
-            <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
-              <input type="radio" name="strategy" [checked]="activeStrategy === s" (change)="setStrategy(s)">
-              {{ s === 'All' ? 'All Strategies' : s }}
-            </label>
-          }
-        </div>
+      <div class="accordion-content">
+        @for (s of strategies; track s) {
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <input type="radio" name="strategy" [checked]="activeStrategy === s" (change)="setStrategy(s)">
+          {{ s === 'All' ? 'All Strategies' : s }}
+        </label>
+        }
+      </div>
       }
     </div>
 
@@ -31,13 +31,42 @@
         <i [ngClass]="expandedSections['timeframe'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
       </div>
       @if (expandedSections['timeframe']) {
-        <div class="accordion-content" style="flex-direction:row; flex-wrap:wrap;">
-          @for (tf of timeFrames; track tf) {
-            <button class="btn-reset" [style.background]="activeTimeFrame === tf ? 'var(--bg)' : 'transparent'" (click)="setTimeFrame(tf)">
-              {{ tf === 'All' ? 'All' : tf }}
-            </button>
-          }
-        </div>
+      <div class="accordion-content" style="flex-direction:row; flex-wrap:wrap;">
+        @for (tf of timeFrames; track tf) {
+        <button class="btn-reset" [style.background]="activeTimeFrame === tf ? 'var(--bg)' : 'transparent'"
+          (click)="setTimeFrame(tf)">
+          {{ tf === 'All' ? 'All' : tf }}
+        </button>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Market Cap Filter -->
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleSection('marketCap')">
+        <span>Market Cap</span>
+        <i [ngClass]="expandedSections['marketCap'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+      </div>
+      @if (expandedSections['marketCap']) {
+      <div class="accordion-content">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <input type="checkbox" [checked]="marketCapFilters['LargeCap']" (change)="toggleMarketCap('LargeCap')">
+          LargeCap
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <input type="checkbox" [checked]="marketCapFilters['MidCap']" (change)="toggleMarketCap('MidCap')">
+          MidCap
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <input type="checkbox" [checked]="marketCapFilters['SmallCap']" (change)="toggleMarketCap('SmallCap')">
+          SmallCap
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <input type="checkbox" [checked]="marketCapFilters['MicroCap']" (change)="toggleMarketCap('MicroCap')">
+          MicroCap
+        </label>
+      </div>
       }
     </div>
 
@@ -48,19 +77,19 @@
         <i [ngClass]="expandedSections['rsi'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
       </div>
       @if (expandedSections['rsi']) {
-        <div class="accordion-content">
-          <div class="filter-value-row">
-            <input type="number" class="filter-input" [(ngModel)]="rsiMin" min="0" max="100" placeholder="0">
-            <span style="font-size:12px; color:var(--text-secondary)">to</span>
-            <input type="number" class="filter-input" [(ngModel)]="rsiMax" min="0" max="100" placeholder="100">
-          </div>
-          <div class="filter-buttons">
-            <button (click)="setRsiPreset('rsi','low')" [class.active-preset]="isPreset('rsi','low')">Low</button>
-            <button (click)="setRsiPreset('rsi','mid')" [class.active-preset]="isPreset('rsi','mid')">Mid</button>
-            <button (click)="setRsiPreset('rsi','high')" [class.active-preset]="isPreset('rsi','high')">High</button>
-            <button (click)="setRsiPreset('rsi','reset')">All</button>
-          </div>
+      <div class="accordion-content">
+        <div class="filter-value-row">
+          <input type="number" class="filter-input" [(ngModel)]="rsiMin" min="0" max="100" placeholder="0">
+          <span style="font-size:12px; color:var(--text-secondary)">to</span>
+          <input type="number" class="filter-input" [(ngModel)]="rsiMax" min="0" max="100" placeholder="100">
         </div>
+        <div class="filter-buttons">
+          <button (click)="setRsiPreset('rsi','low')" [class.active-preset]="isPreset('rsi','low')">Low</button>
+          <button (click)="setRsiPreset('rsi','mid')" [class.active-preset]="isPreset('rsi','mid')">Mid</button>
+          <button (click)="setRsiPreset('rsi','high')" [class.active-preset]="isPreset('rsi','high')">High</button>
+          <button (click)="setRsiPreset('rsi','reset')">All</button>
+        </div>
+      </div>
       }
     </div>
 
@@ -71,19 +100,22 @@
         <i [ngClass]="expandedSections['rsiWeekly'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
       </div>
       @if (expandedSections['rsiWeekly']) {
-        <div class="accordion-content">
-          <div class="filter-value-row">
-            <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMin" min="0" max="100" placeholder="0">
-            <span style="font-size:12px; color:var(--text-secondary)">to</span>
-            <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMax" min="0" max="100" placeholder="100">
-          </div>
-          <div class="filter-buttons">
-            <button (click)="setRsiPreset('rsiWeekly','low')" [class.active-preset]="isPreset('rsiWeekly','low')">Low</button>
-            <button (click)="setRsiPreset('rsiWeekly','mid')" [class.active-preset]="isPreset('rsiWeekly','mid')">Mid</button>
-            <button (click)="setRsiPreset('rsiWeekly','high')" [class.active-preset]="isPreset('rsiWeekly','high')">High</button>
-            <button (click)="setRsiPreset('rsiWeekly','reset')">All</button>
-          </div>
+      <div class="accordion-content">
+        <div class="filter-value-row">
+          <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMin" min="0" max="100" placeholder="0">
+          <span style="font-size:12px; color:var(--text-secondary)">to</span>
+          <input type="number" class="filter-input" [(ngModel)]="rsiWeeklyMax" min="0" max="100" placeholder="100">
         </div>
+        <div class="filter-buttons">
+          <button (click)="setRsiPreset('rsiWeekly','low')"
+            [class.active-preset]="isPreset('rsiWeekly','low')">Low</button>
+          <button (click)="setRsiPreset('rsiWeekly','mid')"
+            [class.active-preset]="isPreset('rsiWeekly','mid')">Mid</button>
+          <button (click)="setRsiPreset('rsiWeekly','high')"
+            [class.active-preset]="isPreset('rsiWeekly','high')">High</button>
+          <button (click)="setRsiPreset('rsiWeekly','reset')">All</button>
+        </div>
+      </div>
       }
     </div>
 
@@ -94,19 +126,22 @@
         <i [ngClass]="expandedSections['rsiMonthly'] ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
       </div>
       @if (expandedSections['rsiMonthly']) {
-        <div class="accordion-content">
-          <div class="filter-value-row">
-            <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMin" min="0" max="100" placeholder="0">
-            <span style="font-size:12px; color:var(--text-secondary)">to</span>
-            <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMax" min="0" max="100" placeholder="100">
-          </div>
-          <div class="filter-buttons">
-            <button (click)="setRsiPreset('rsiMonthly','low')" [class.active-preset]="isPreset('rsiMonthly','low')">Low</button>
-            <button (click)="setRsiPreset('rsiMonthly','mid')" [class.active-preset]="isPreset('rsiMonthly','mid')">Mid</button>
-            <button (click)="setRsiPreset('rsiMonthly','high')" [class.active-preset]="isPreset('rsiMonthly','high')">High</button>
-            <button (click)="setRsiPreset('rsiMonthly','reset')">All</button>
-          </div>
+      <div class="accordion-content">
+        <div class="filter-value-row">
+          <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMin" min="0" max="100" placeholder="0">
+          <span style="font-size:12px; color:var(--text-secondary)">to</span>
+          <input type="number" class="filter-input" [(ngModel)]="rsiMonthlyMax" min="0" max="100" placeholder="100">
         </div>
+        <div class="filter-buttons">
+          <button (click)="setRsiPreset('rsiMonthly','low')"
+            [class.active-preset]="isPreset('rsiMonthly','low')">Low</button>
+          <button (click)="setRsiPreset('rsiMonthly','mid')"
+            [class.active-preset]="isPreset('rsiMonthly','mid')">Mid</button>
+          <button (click)="setRsiPreset('rsiMonthly','high')"
+            [class.active-preset]="isPreset('rsiMonthly','high')">High</button>
+          <button (click)="setRsiPreset('rsiMonthly','reset')">All</button>
+        </div>
+      </div>
       }
     </div>
   </div>
@@ -136,72 +171,184 @@
 
     <div class="table-container">
       @if (loading) {
-        <div class="loading">Loading...</div>
+      <div class="loading">Loading...</div>
       } @else {
-        <table>
-          <thead>
-            <tr>
-              <th [class.sort-active]="sortColumn === 'symbol'" (click)="sort('symbol')">
-                <span style="display:flex; align-items:center; gap:4px;">
-                  Symbol <i [class]="sortColumn === 'symbol' && sortDirection === 'desc' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'" [style.opacity]="sortColumn === 'symbol' ? 1 : 0.3"></i>
-                </span>
-              </th>
-              <th [class.sort-active]="sortColumn === 'recognizeDate'" (click)="sort('recognizeDate')">
-                Date
-              </th>
-              <th [class.sort-active]="sortColumn === 'screenerName'" (click)="sort('screenerName')">
-                Strategy
-              </th>
-              <th>TF</th>
-              <th [class.sort-active]="sortColumn === 'recognizedPrice'" (click)="sort('recognizedPrice')">
-                Price
-              </th>
-              <th [class.sort-active]="sortColumn === 'rsi'" (click)="sort('rsi')">
-                RSI
-              </th>
-              <th [class.sort-active]="sortColumn === 'rsiWeekly'" (click)="sort('rsiWeekly')">
-                RSI(W)
-              </th>
-              <th [class.sort-active]="sortColumn === 'rsiMonthly'" (click)="sort('rsiMonthly')">
-                RSI(M)
-              </th>
-              <th [class.sort-active]="sortColumn === 'volume'" (click)="sort('volume')">
-                Volume
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (r of filteredResults; track r.id) {
-              <tr [class.row-multi-hit]="multiTimeFrameSymbols.has(r.symbol) && multiStrategySymbols.has(r.symbol)">
-                <td><strong>{{ r.symbol }}</strong></td>
-                <td>{{ formatDate(r.recognizeDate) }}</td>
-                <td class="text-col">
-                  <span class="strategy-badge" [class.badge-multi-strategy]="multiStrategySymbols.has(r.symbol)">
-                    {{ r.screenerName }}
-                    @if (multiStrategySymbols.has(r.symbol)) { <span class="badge-dot">&#x2605;</span> }
-                  </span>
-                </td>
-                <td class="text-col">
-                  <strong [class.tf-multi]="multiTimeFrameSymbols.has(r.symbol)">{{ r.timeFrame }}</strong>
-                  @if (multiTimeFrameSymbols.has(r.symbol)) { <span class="tf-badge">D+W</span> }
-                </td>
-                <td>{{ formatPrice(r.recognizedPrice) }}</td>
-                <td>{{ formatRsi(r.rsi) }}</td>
-                <td>{{ formatRsi(r.rsiWeekly) }}</td>
-                <td>{{ formatRsi(r.rsiMonthly) }}</td>
-                <td>{{ formatVolume(r.volume) }}</td>
-              </tr>
-            }
-            @if (filteredResults.length === 0) {
-              <tr>
-                <td colspan="9" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
-                  No results found
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <table>
+        <thead>
+          <tr>
+            <th [class.sort-active]="sortColumn === 'symbol'" (click)="sort('symbol')">
+              <span style="display:flex; align-items:center; gap:4px;">
+                Symbol <i
+                  [class]="sortColumn === 'symbol' && sortDirection === 'desc' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'"
+                  [style.opacity]="sortColumn === 'symbol' ? 1 : 0.3"></i>
+              </span>
+            </th>
+            <th [class.sort-active]="sortColumn === 'recognizeDate'" (click)="sort('recognizeDate')">
+              Date
+            </th>
+            <th [class.sort-active]="sortColumn === 'marketCap'" (click)="sort('marketCap')">
+              M-Cap
+            </th>
+            <th [class.sort-active]="sortColumn === 'screenerName'" (click)="sort('screenerName')">
+              Strategy
+            </th>
+            <th>TF</th>
+            <th [class.sort-active]="sortColumn === 'recognizedPrice'" (click)="sort('recognizedPrice')">
+              Price
+            </th>
+            <th [class.sort-active]="sortColumn === 'rsi'" (click)="sort('rsi')">
+              RSI
+            </th>
+            <th [class.sort-active]="sortColumn === 'rsiWeekly'" (click)="sort('rsiWeekly')">
+              RSI(W)
+            </th>
+            <th [class.sort-active]="sortColumn === 'rsiMonthly'" (click)="sort('rsiMonthly')">
+              RSI(M)
+            </th>
+            <th [class.sort-active]="sortColumn === 'volume'" (click)="sort('volume')">
+              Volume
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filteredResults; track r.id) {
+          <tr [class.row-multi-hit]="multiTimeFrameSymbols.has(r.symbol) && multiStrategySymbols.has(r.symbol)">
+            <td><a href="javascript:void(0)" (click)="openSlideOut(r.symbol)"
+                style="font-weight:bold; color:var(--text); text-decoration:none;">{{ r.symbol }}</a></td>
+            <td>{{ formatDate(r.recognizeDate) }}</td>
+            <td>{{ r.marketCapCategory || '-' }}</td>
+            <td class="text-col">
+              <span class="strategy-badge" [class.badge-multi-strategy]="multiStrategySymbols.has(r.symbol)">
+                {{ r.screenerName }}
+                @if (multiStrategySymbols.has(r.symbol)) { <span class="badge-dot">&#x2605;</span> }
+              </span>
+            </td>
+            <td class="text-col">
+              <strong [class.tf-multi]="multiTimeFrameSymbols.has(r.symbol)">{{ r.timeFrame }}</strong>
+              @if (multiTimeFrameSymbols.has(r.symbol)) { <span class="tf-badge">D+W</span> }
+            </td>
+            <td>{{ formatPrice(r.recognizedPrice) }}</td>
+            <td>{{ formatRsi(r.rsi) }}</td>
+            <td>{{ formatRsi(r.rsiWeekly) }}</td>
+            <td>{{ formatRsi(r.rsiMonthly) }}</td>
+            <td>{{ formatVolume(r.volume) }}</td>
+          </tr>
+          }
+          @if (filteredResults.length === 0) {
+          <tr>
+            <td colspan="9" class="text-col text-secondary" style="text-align:center;padding:var(--space-5)">
+              No results found
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
       }
     </div>
+  </div>
+</div>
+
+<!-- Slide-out Panel for Fundamentals & News -->
+<div class="slide-out-overlay" *ngIf="isSlideOutOpen" (click)="closeSlideOut()"></div>
+<div class="slide-out-panel" [class.open]="isSlideOutOpen">
+  <div class="panel-header">
+    <h2>{{ selectedStockSymbol }} Details</h2>
+    <button class="btn-icon" (click)="closeSlideOut()"><i class="ri-close-line"></i></button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="panel-tabs">
+    <button class="panel-tab" [class.active]="activeTab === 'fundamentals'" (click)="setTab('fundamentals')">
+      <i class="ri-bar-chart-2-line"></i> Fundamentals
+    </button>
+    <button class="panel-tab" [class.active]="activeTab === 'news'" (click)="setTab('news')">
+      <i class="ri-newspaper-line"></i> News
+      @if (stockNews.length > 0) { <span class="news-count-badge">{{ stockNews.length }}</span> }
+    </button>
+  </div>
+
+  <div class="panel-content">
+
+    <!-- FUNDAMENTALS TAB -->
+    @if (activeTab === 'fundamentals') {
+    <div *ngIf="loadingDetails" class="loading">Loading Fundamentals...</div>
+
+    <div *ngIf="!loadingDetails && selectedStockDetail">
+      <div class="detail-section">
+        <h3>Company Profile</h3>
+        <p><strong>Industry:</strong> {{ selectedStockDetail.industry || 'N/A' }}</p>
+        <p><strong>Website:</strong> <a *ngIf="selectedStockDetail.website" [href]="selectedStockDetail.website"
+            target="_blank">{{ selectedStockDetail.website }}</a><span *ngIf="!selectedStockDetail.website">N/A</span>
+        </p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Valuation Ratios</h3>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="label">P/E Ratio</span>
+            <span class="value">{{ selectedStockDetail.peRatio ? (selectedStockDetail.peRatio | number:'1.2-2') : 'N/A'
+              }}</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">P/B Ratio</span>
+            <span class="value">{{ selectedStockDetail.pbRatio ? (selectedStockDetail.pbRatio | number:'1.2-2') : 'N/A'
+              }}</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">Div Yield</span>
+            <span class="value">{{ selectedStockDetail.dividendYield ? (selectedStockDetail.dividendYield |
+              number:'1.2-2') + '%' : 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>52 Week Range</h3>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="label">High</span>
+            <span class="value">{{ selectedStockDetail.fiftyTwoWeekHigh ?
+              formatPrice(selectedStockDetail.fiftyTwoWeekHigh) : 'N/A' }}</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">Low</span>
+            <span class="value">{{ selectedStockDetail.fiftyTwoWeekLow ?
+              formatPrice(selectedStockDetail.fiftyTwoWeekLow) : 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loadingDetails && !selectedStockDetail" style="padding: 20px; color: var(--text-secondary);">
+      No fundamental data available. Run the Fundamentals Sync job.
+    </div>
+    }
+
+    <!-- NEWS TAB -->
+    @if (activeTab === 'news') {
+    <div *ngIf="loadingNews" class="loading">Loading News...</div>
+
+    @if (!loadingNews) {
+    @if (stockNews.length === 0) {
+    <div style="padding: 20px; color: var(--text-secondary);">No news found for {{ selectedStockSymbol }}.</div>
+    }
+    @for (item of stockNews; track item.id) {
+    <div class="news-item">
+      <div class="news-meta">
+        <span class="news-provider">{{ item.provider?.name }}</span>
+        <span class="news-date">{{ formatNewsDate(item.published) }}</span>
+        @if (item.paywall) { <span class="news-paywall-badge">Paywall</span> }
+      </div>
+      @if (item.link) {
+      <a class="news-title" [href]="item.link" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+      } @else {
+      <span class="news-title no-link">{{ item.title }}</span>
+      }
+    </div>
+    }
+    }
+    }
+
   </div>
 </div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult } from '../../shared/models/screener.model';
+import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult, StockFundamental, StockNewsItem } from '../../shared/models/screener.model';
 
 @Injectable({ providedIn: 'root' })
 export class ScreenerService {
@@ -33,5 +33,13 @@ export class ScreenerService {
 
   getJobs(): Observable<JobRun[]> {
     return this.http.get<JobRun[]>(`${this.API_URL}/jobs`);
+  }
+
+  getStockFundamentals(symbol: string): Observable<StockFundamental> {
+    return this.http.get<StockFundamental>(`${this.API_URL}/fundamentals/${symbol}`);
+  }
+
+  getStockNews(symbol: string): Observable<{ items: StockNewsItem[] }> {
+    return this.http.get<{ items: StockNewsItem[] }>(`http://localhost:5100/api/news/${symbol}`);
   }
 }

@@ -7,4 +7,7 @@ public class DistinctStock
     public string CompanyName { get; set; } = string.Empty;
     public string Exchange { get; set; } = "NSE";
     public int TotalTradingDays { get; set; }
+    
+    public string? MarketCapCategory { get; set; }
+    public StockFundamental? Fundamental { get; set; }
 }

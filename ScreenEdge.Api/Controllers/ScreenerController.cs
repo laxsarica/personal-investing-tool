@@ -6,6 +6,7 @@ using ScreenEdge.Entity;
 using ScreenEdge.Entity.Entities;
 using ScreenEdge.Repository;
 using ScreenEdge.Screener;
+using ScreenEdge.Api.Models;
 
 namespace ScreenEdge.Api.Controllers;
 
@@ -61,6 +62,13 @@ public class ScreenerController : ControllerBase
         return Ok(new { Message = result });
     }
 
+    [HttpPost("sync-fundamentals")]
+    public IActionResult SyncFundamentals()
+    {
+        Hangfire.BackgroundJob.Enqueue<ScreenEdge.Api.Jobs.FundamentalsSyncJob>(x => x.SyncFundamentalsAsync());
+        return Ok(new { Message = "Fundamentals Sync Job enqueued successfully via Hangfire." });
+    }
+
     /// <summary>Get latest screener results with optional filters.</summary>
     [HttpGet("results")]
     public async Task<IActionResult> GetResults(
@@ -82,7 +90,27 @@ public class ScreenerController : ControllerBase
         if (!string.IsNullOrEmpty(timeFrame))
             query = query.Where(s => s.TimeFrame == timeFrame);
 
-        var results = await query.OrderBy(s => s.Symbol).ToListAsync();
+        var results = await query
+            .Join(_context.DistinctStocks, 
+                  s => s.Symbol, 
+                  d => d.Symbol, 
+                  (s, d) => new ScreenerResultDto
+                  {
+                      Id = s.Id,
+                      Symbol = s.Symbol,
+                      ScreenerName = s.ScreenerName,
+                      TimeFrame = s.TimeFrame,
+                      RecognizeDate = s.RecognizeDate,
+                      Rsi = s.Rsi,
+                      RsiWeekly = s.RsiWeekly,
+                      RsiMonthly = s.RsiMonthly,
+                      Volume = s.Volume,
+                      RecognizedPrice = s.RecognizedPrice,
+                      MarketCapCategory = d.MarketCapCategory
+                  })
+            .OrderBy(s => s.Symbol)
+            .ToListAsync();
+            
         return Ok(results);
     }
 
@@ -113,6 +141,23 @@ public class ScreenerController : ControllerBase
             .ThenBy(s => s.Symbol)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Join(_context.DistinctStocks, 
+                  s => s.Symbol, 
+                  d => d.Symbol, 
+                  (s, d) => new ScreenerResultDto
+                  {
+                      Id = s.Id,
+                      Symbol = s.Symbol,
+                      ScreenerName = s.ScreenerName,
+                      TimeFrame = s.TimeFrame,
+                      RecognizeDate = s.RecognizeDate,
+                      Rsi = s.Rsi,
+                      RsiWeekly = s.RsiWeekly,
+                      RsiMonthly = s.RsiMonthly,
+                      Volume = s.Volume,
+                      RecognizedPrice = s.RecognizedPrice,
+                      MarketCapCategory = d.MarketCapCategory
+                  })
             .ToListAsync();
 
         return Ok(new { totalCount, page, pageSize, results });
@@ -137,5 +182,21 @@ public class ScreenerController : ControllerBase
             .ToListAsync();
 
         return Ok(jobs);
+    }
+
+    /// <summary>Get detailed stock fundamentals.</summary>
+    [HttpGet("fundamentals/{symbol}")]
+    public async Task<IActionResult> GetFundamentals(string symbol)
+    {
+        var stock = await _context.DistinctStocks
+            .Include(d => d.Fundamental)
+            .FirstOrDefaultAsync(d => d.Symbol == symbol);
+
+        if (stock == null || stock.Fundamental == null)
+        {
+            return NotFound(new { Message = "Fundamentals not found for this symbol." });
+        }
+
+        return Ok(stock.Fundamental);
     }
 }

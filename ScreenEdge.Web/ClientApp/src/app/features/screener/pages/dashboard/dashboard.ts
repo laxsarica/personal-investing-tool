@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScreenerService } from '../../../../core/services/screener.service';
-import { ScreenerResult } from '../../../../shared/models/screener.model';
+import { ScreenerResult, StockFundamental, StockNewsItem } from '../../../../shared/models/screener.model';
 
 @Component({
   selector: 'app-screener-dashboard',
@@ -36,10 +36,26 @@ export class DashboardComponent implements OnInit {
   expandedSections: { [key: string]: boolean } = {
     strategy: true,
     timeframe: true,
+    marketCap: true,
     rsi: false,
     rsiWeekly: false,
     rsiMonthly: false
   };
+
+  marketCapFilters = {
+    'LargeCap': false,
+    'MidCap': false,
+    'SmallCap': false,
+    'MicroCap': false
+  };
+
+  isSlideOutOpen = false;
+  selectedStockSymbol = '';
+  selectedStockDetail: StockFundamental | null = null;
+  loadingDetails = false;
+  activeTab: 'fundamentals' | 'news' = 'fundamentals';
+  stockNews: StockNewsItem[] = [];
+  loadingNews = false;
 
   strategies = ['All', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT'];
   timeFrames = ['All', 'D', 'W'];
@@ -101,9 +117,15 @@ export class DashboardComponent implements OnInit {
     this.applyFilters();
   }
 
+  toggleMarketCap(cap: 'LargeCap' | 'MidCap' | 'SmallCap' | 'MicroCap'): void {
+    this.marketCapFilters[cap] = !this.marketCapFilters[cap];
+    this.applyFilters();
+  }
+
   resetFilters(): void {
     this.activeStrategy = 'All';
     this.activeTimeFrame = 'All';
+    this.marketCapFilters = { 'LargeCap': false, 'MidCap': false, 'SmallCap': false, 'MicroCap': false };
     this.rsiMin = null; this.rsiMax = null;
     this.rsiWeeklyMin = null; this.rsiWeeklyMax = null;
     this.rsiMonthlyMin = null; this.rsiMonthlyMax = null;
@@ -164,6 +186,21 @@ export class DashboardComponent implements OnInit {
     if (this.rsiMonthlyMin !== null) data = data.filter(r => r.rsiMonthly >= this.rsiMonthlyMin!);
     if (this.rsiMonthlyMax !== null) data = data.filter(r => r.rsiMonthly <= this.rsiMonthlyMax!);
 
+    const mCapSelected = Object.values(this.marketCapFilters).some(v => v);
+    if (mCapSelected) {
+      data = data.filter(r => {
+        if (!r.marketCapCategory) return false;
+        
+        // Exact string match on the backend-provided category
+        if (this.marketCapFilters['LargeCap'] && r.marketCapCategory === 'LargeCap') return true;
+        if (this.marketCapFilters['MidCap'] && r.marketCapCategory === 'MidCap') return true;
+        if (this.marketCapFilters['SmallCap'] && r.marketCapCategory === 'SmallCap') return true;
+        if (this.marketCapFilters['MicroCap'] && r.marketCapCategory === 'MicroCap') return true;
+        
+        return false;
+      });
+    }
+
     data.sort((a, b) => {
       const aVal = (a as any)[this.sortColumn];
       const bVal = (b as any)[this.sortColumn];
@@ -193,5 +230,47 @@ export class DashboardComponent implements OnInit {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  openSlideOut(symbol: string): void {
+    this.selectedStockSymbol = symbol;
+    this.selectedStockDetail = null;
+    this.stockNews = [];
+    this.isSlideOutOpen = true;
+    this.activeTab = 'fundamentals';
+    this.loadingDetails = true;
+    this.loadingNews = true;
+
+    this.screenerService.getStockFundamentals(symbol).subscribe({
+      next: (details) => {
+        this.selectedStockDetail = details;
+        this.loadingDetails = false;
+      },
+      error: () => {
+        this.loadingDetails = false;
+      }
+    });
+
+    this.screenerService.getStockNews(symbol).subscribe({
+      next: (resp) => {
+        this.stockNews = resp.items || [];
+        this.loadingNews = false;
+      },
+      error: () => {
+        this.loadingNews = false;
+      }
+    });
+  }
+
+  setTab(tab: 'fundamentals' | 'news'): void {
+    this.activeTab = tab;
+  }
+
+  formatNewsDate(unixTs: number): string {
+    return new Date(unixTs * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  closeSlideOut(): void {
+    this.isSlideOutOpen = false;
   }
 }
