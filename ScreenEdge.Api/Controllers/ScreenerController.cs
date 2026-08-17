@@ -197,6 +197,20 @@ public class ScreenerController : ControllerBase
             return NotFound(new { Message = "Fundamentals not found for this symbol." });
         }
 
-        return Ok(stock.Fundamental);
+        // Return a flat DTO to avoid JSON circular reference (Fundamental -> DistinctStock -> Fundamental)
+        var f = stock.Fundamental;
+        return Ok(new
+        {
+            f.Id,
+            f.PeRatio,
+            f.PbRatio,
+            f.DividendYield,
+            f.FiftyTwoWeekHigh,
+            f.FiftyTwoWeekLow,
+            f.Industry,
+            f.Website,
+            f.Description,
+            f.LastUpdated
+        });
     }
 }
