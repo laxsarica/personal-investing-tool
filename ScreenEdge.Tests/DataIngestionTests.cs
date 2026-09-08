@@ -14,7 +14,7 @@ namespace ScreenEdge.Tests;
 public class DataIngestionTests
 {
     private readonly ITestOutputHelper _output;
-    private const string ConnectionString = "Server=localhost;Database=ScreenEdgeDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
 
     public DataIngestionTests(ITestOutputHelper output)
     {
@@ -24,7 +24,7 @@ public class DataIngestionTests
     private AppDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(ConnectionString)
+            .UseNpgsql(ConnectionString)
             .Options;
         return new AppDbContext(options);
     }
@@ -48,7 +48,7 @@ public class DataIngestionTests
         HistoryDataRequest historyDataRequest = new HistoryDataRequest();
         historyDataRequest.exchange = "NSE";
         historyDataRequest.interval = "ONE_DAY";
-        historyDataRequest.fromdate = DateTime.Now.AddYears(-5).ToString("yyyy-MM-dd HH:mm");
+        historyDataRequest.fromdate = DateTime.Now.AddYears(-3).ToString("yyyy-MM-dd HH:mm");
         historyDataRequest.todate = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
         foreach (InstrumentJsonModel item in list)

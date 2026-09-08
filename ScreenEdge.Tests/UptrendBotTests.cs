@@ -13,7 +13,7 @@ namespace ScreenEdge.Tests;
 public class UptrendBotTests
 {
     private readonly ITestOutputHelper _output;
-    private const string ConnectionString = "Server=localhost;Database=ScreenEdgeDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
 
     public UptrendBotTests(ITestOutputHelper output)
     {
@@ -23,7 +23,7 @@ public class UptrendBotTests
     private AppDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(ConnectionString)
+            .UseNpgsql(ConnectionString)
             .Options;
         return new AppDbContext(options);
     }

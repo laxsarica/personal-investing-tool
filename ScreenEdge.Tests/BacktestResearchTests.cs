@@ -21,7 +21,7 @@ public class BacktestResearchTests
     // Backtest configuration
     private const double WinThresholdPercent = 5.0;
     private const double LossThresholdPercent = -3.0;
-    private const string ConnectionString = "Server=localhost;Database=ScreenEdgeDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
 
     public BacktestResearchTests(ITestOutputHelper output)
     {
@@ -31,7 +31,7 @@ public class BacktestResearchTests
     private AppDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(ConnectionString)
+            .UseNpgsql(ConnectionString)
             .Options;
         return new AppDbContext(options);
     }

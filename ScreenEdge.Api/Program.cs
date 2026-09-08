@@ -9,10 +9,16 @@ using ScreenEdge.Broker;
 using ScreenEdge.Api.Services;
 using ScreenEdge.Broker.Kite;
 using Hangfire;
-using Hangfire.SqlServer;
+using Hangfire.PostgreSql;
 using ScreenEdge.Api.Jobs;
 
+// Enable Npgsql legacy timestamp behavior for seamless DateTime compatibility
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Resolve PostgreSQL Connection String (supports both ADO.NET and URI format)
+var connectionString = ResolvePostgresConnectionString(builder.Configuration);
 
 // Register IHttpClientFactory (used by NewsController to proxy TradingView news)
 builder.Services.AddHttpClient();
@@ -20,9 +26,9 @@ builder.Services.AddHttpClient();
 // Add Yahoo Finance service (uses static YahooFinanceApi library - no HttpClient needed)
 builder.Services.AddScoped<YahooFinanceService>();
 
-// EF Core
+// EF Core (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Repository + UoW
 builder.Services.AddScoped<IUnitOfWorks, UnitOfWorks>();
@@ -59,20 +65,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Hangfire Configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
+// Hangfire Configuration (PostgreSQL)
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+    .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString), new PostgreSqlStorageOptions
     {
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.Zero,
-        UseRecommendedIsolationLevel = true
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        InvisibilityTimeout = TimeSpan.FromMinutes(5)
     }));
 
 // Add the Hangfire processing server
@@ -123,4 +124,35 @@ RecurringJob.AddOrUpdate<FundamentalsSyncJob>(
     Cron.Weekly(DayOfWeek.Saturday, 2)
 ); // Runs every Saturday at 2 AM UTC
 
+// Automatically apply any pending EF Core migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.Run();
+
+// Helper method to resolve and normalize PostgreSQL connection strings
+static string ResolvePostgresConnectionString(IConfiguration configuration)
+{
+    var raw = Environment.GetEnvironmentVariable("DATABASE_URL")
+        ?? configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("PostgreSQL connection string not configured.");
+
+    // Handle URI format: postgres://user:password@host:port/database?sslmode=require
+    if (raw.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+        raw.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        var uri = new Uri(raw);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres";
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
+
+        return $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+
+    return raw;
+}
