@@ -116,7 +116,7 @@ public class ScreenerEngineTests
     }
 
     [Fact]
-    public async Task CleanUpRsiFull()
+    public async Task CheckScreenerNames()
     {
         var services = new ServiceCollection();
         var connectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
@@ -128,14 +128,7 @@ public class ScreenerEngineTests
         using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var oldRsiFull = await context.Screeners.Where(x => x.ScreenerName == "RSIFULL").ToListAsync();
-        _output.WriteLine($"Found {oldRsiFull.Count} old RSIFULL records.");
-        
-        if (oldRsiFull.Count > 0)
-        {
-            context.Screeners.RemoveRange(oldRsiFull);
-            await context.SaveChangesAsync();
-            _output.WriteLine("Deleted all old RSIFULL records.");
-        }
+        var names = await context.Screeners.Select(s => s.ScreenerName).Distinct().ToListAsync();
+        _output.WriteLine("Unique Screener Names in DB: " + string.Join(", ", names));
     }
 }
