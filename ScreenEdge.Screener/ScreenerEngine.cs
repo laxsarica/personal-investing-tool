@@ -100,8 +100,8 @@ public class ScreenerEngine : IScreenerEngine
                 foreach (var s in RsiTtfScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
                     screeners.Add(s);
 
-                foreach (var s in FullRsiScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                // foreach (var s in FullRsiScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                //     screeners.Add(s);
 
                 foreach (var s in UptrendBotScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
                     screeners.Add(s);

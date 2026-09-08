@@ -12,9 +12,16 @@ using ScreenEdge.Screener;
 using Xunit;
 
 namespace ScreenEdge.Tests;
+using Xunit.Abstractions;
 
 public class ScreenerEngineTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public ScreenerEngineTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
     private IServiceScopeFactory CreateMockScopeFactory(AppDbContext dbContext)
     {
         var services = new ServiceCollection();
@@ -75,5 +82,60 @@ public class ScreenerEngineTests
         Assert.Equal(1, result.TotalStocksScanned);
         Assert.Equal(0, result.RecordCount);
         Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public async Task TestScreenerLive()
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        var services = new ServiceCollection();
+        var connectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
+        
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        var serviceProvider = services.BuildServiceProvider();
+        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
+        var logger = NullLogger<ScreenerEngine>.Instance;
+
+        var engine = new ScreenerEngine(scopeFactory, logger);
+
+        _output.WriteLine("Starting Screener Engine Job...");
+        var result = await engine.RunScreenerJobAsync();
+
+        _output.WriteLine($"Screener completed in {result.TimeMinutes:F2} minutes.");
+        _output.WriteLine($"Total Stocks Scanned: {result.TotalStocksScanned}");
+        _output.WriteLine($"Total Signals Generated: {result.RecordCount}");
+        
+        foreach(var strategy in result.SignalsByStrategy)
+        {
+            _output.WriteLine($"- {strategy.Key}: {strategy.Value}");
+        }
+    }
+
+    [Fact]
+    public async Task CleanUpRsiFull()
+    {
+        var services = new ServiceCollection();
+        var connectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
+        
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        var serviceProvider = services.BuildServiceProvider();
+        using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var oldRsiFull = await context.Screeners.Where(x => x.ScreenerName == "RSIFULL").ToListAsync();
+        _output.WriteLine($"Found {oldRsiFull.Count} old RSIFULL records.");
+        
+        if (oldRsiFull.Count > 0)
+        {
+            context.Screeners.RemoveRange(oldRsiFull);
+            await context.SaveChangesAsync();
+            _output.WriteLine("Deleted all old RSIFULL records.");
+        }
     }
 }
