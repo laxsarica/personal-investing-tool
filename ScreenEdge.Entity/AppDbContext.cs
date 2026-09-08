@@ -12,6 +12,12 @@ public class AppDbContext : DbContext
     public DbSet<StockFundamental> StockFundamentals { get; set; }
     public DbSet<Screener> Screeners { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.AddInterceptors(new PostgreSqlReadWriteInterceptor());
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -45,4 +51,24 @@ public class AppDbContext : DbContext
         });
     }
 }
+
+public class PostgreSqlReadWriteInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
+{
+    public override void ConnectionOpened(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SET default_transaction_read_only = off; SET transaction_read_only = off;";
+        cmd.ExecuteNonQuery();
+        base.ConnectionOpened(connection, eventData);
+    }
+
+    public override async Task ConnectionOpenedAsync(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData, CancellationToken cancellationToken = default)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SET default_transaction_read_only = off; SET transaction_read_only = off;";
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken);
+    }
+}
+
 

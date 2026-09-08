@@ -52,14 +52,26 @@ public class InstrumentJsonModel
 
         string directory = Path.Combine(Path.GetDirectoryName(entryAssemblyLocation) ?? string.Empty, "MasterData");
         string path = Path.Combine(directory, "OpenAPIScripMaster.json");
-        using (HttpClient httpClient = new HttpClient())
+        if (File.Exists(path) && new FileInfo(path).Length > 1000)
+            return;
+
+        try
         {
-            HttpResponseMessage result1 = httpClient.GetAsync("https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json").Result;
-            result1.EnsureSuccessStatusCode();
-            string result2 = result1.Content.ReadAsStringAsync().Result;
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            File.WriteAllText(path, result2);
+            using (HttpClient httpClient = new HttpClient())
+            {
+                HttpResponseMessage result1 = httpClient.GetAsync("https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json").Result;
+                result1.EnsureSuccessStatusCode();
+                string result2 = result1.Content.ReadAsStringAsync().Result;
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+                File.WriteAllText(path, result2);
+            }
+        }
+        catch
+        {
+            if (File.Exists(path) && new FileInfo(path).Length > 1000)
+                return;
+            throw;
         }
     }
 }
