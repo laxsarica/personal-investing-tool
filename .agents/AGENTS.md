@@ -7,7 +7,7 @@
 - **Origin:** Extracted from MarketWeave (NebulaNest) — Technical Screeners module only
 
 ## Tech Stack Rules
-- **Backend:** .NET 8.0 (LTS), ASP.NET Core Minimal API, Entity Framework Core 9, SQL Server LocalDB
+- **Backend:** .NET 8.0 (LTS), ASP.NET Core Minimal API, Entity Framework Core 9, PostgreSQL
 - **Frontend:** Angular 20 (standalone components, no NgModules). Desktop-only, light theme, data-dense table-first UI. Inter + JetBrains Mono fonts. Zone.js change detection (default) — no signals, no OnPush, no manual ChangeDetectorRef. See `ui-design-system` skill for full spec.
 - **All projects** must target `net8.0`
 - **Use file-scoped namespaces** — `namespace X;` (not `namespace X { }`)
