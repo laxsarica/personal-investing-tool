@@ -13,7 +13,7 @@ namespace ScreenEdge.Tests;
 public class DataIngestionTests
 {
     private readonly ITestOutputHelper _output;
-    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
+    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
 
     static DataIngestionTests()
     {
@@ -138,6 +138,7 @@ public class DataIngestionTests
             _output.WriteLine($"Successfully uploaded {result.data.Length} candles for {cleanSymbol}");
         }
     }
+
 
     [Fact]
     public void InsertHistoricalData()
