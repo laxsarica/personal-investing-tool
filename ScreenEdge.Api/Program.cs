@@ -15,7 +15,11 @@ using ScreenEdge.Api.Jobs;
 // Enable Npgsql legacy timestamp behavior for seamless DateTime compatibility
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory
+});
 
 // Resolve PostgreSQL Connection String (supports both ADO.NET and URI format)
 var connectionString = ResolvePostgresConnectionString(builder.Configuration);
@@ -136,8 +140,18 @@ RecurringJob.AddOrUpdate<FundamentalsSyncJob>(
 // Automatically apply any pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Checking and applying pending database migrations...");
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Database.Migrate();
+        logger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying EF Core database migrations.");
+    }
 }
 
 app.Run();
@@ -146,8 +160,24 @@ app.Run();
 static string ResolvePostgresConnectionString(IConfiguration configuration)
 {
     var raw = Environment.GetEnvironmentVariable("DATABASE_URL")
+        ?? Environment.GetEnvironmentVariable("POSTGRES_URL")
+        ?? Environment.GetEnvironmentVariable("POSTGRESQL_URL")
+        ?? Environment.GetEnvironmentVariable("DB_URL")
+        ?? Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
+        ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
         ?? configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("PostgreSQL connection string not configured.");
+        ?? configuration["DATABASE_URL"]
+        ?? configuration["DefaultConnection"];
+
+    if (string.IsNullOrWhiteSpace(raw))
+    {
+        throw new InvalidOperationException(
+            "PostgreSQL connection string not configured. " +
+            "Please set the DATABASE_URL (or POSTGRES_URL) environment variable, " +
+            "or ensure ConnectionStrings:DefaultConnection is set in appsettings.json.");
+    }
+
+    raw = raw.Trim().Trim('"', '\'');
 
     // Handle URI format: postgres://user:password@host:port/database?sslmode=require
     if (raw.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
@@ -160,8 +190,11 @@ static string ResolvePostgresConnectionString(IConfiguration configuration)
         var port = uri.Port > 0 ? uri.Port : 5432;
         var database = uri.AbsolutePath.TrimStart('/');
 
-        return $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+        var conn = $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+        Console.WriteLine($"[Startup] Resolved PostgreSQL URI -> Host: {uri.Host}, Port: {port}, Database: {database}, User: {username}");
+        return conn;
     }
 
+    Console.WriteLine("[Startup] Resolved standard ADO.NET PostgreSQL connection string.");
     return raw;
 }

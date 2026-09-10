@@ -65,6 +65,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # ── .NET API ──────────────────────────────────────────────────────────
+WORKDIR /app/api
 COPY --from=api-build /publish/api /app/api
 
 # ── MasterData Directory (Pre-seed scrip master) ──────────────────────
