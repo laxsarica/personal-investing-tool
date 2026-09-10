@@ -56,6 +56,8 @@ RUN dotnet publish ScreenEdge.Api/ScreenEdge.Api.csproj \
 # ═════════════════════════════════════════════════════════════════════════
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim AS final
 
+ENV DOTNET_ROLL_FORWARD=Major
+
 # Install nginx + envsubst (from gettext-base) in one layer
 RUN apt-get update \
     && apt-get install -y --no-install-recommends nginx gettext-base curl \

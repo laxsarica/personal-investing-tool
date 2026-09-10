@@ -10,6 +10,7 @@ export PORT="${PORT:-8080}"
 # ── 1. Start the .NET API (Kestrel on localhost:5000) ───────────────────
 ASPNETCORE_ENVIRONMENT=Production \
 ASPNETCORE_URLS="http://127.0.0.1:5000" \
+DOTNET_ROLL_FORWARD=Major \
 DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false \
 dotnet /app/api/ScreenEdge.Api.dll &
 
