@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScreenEdge.Screener\ScreenEdge.Screener.csproj" />
-    <ProjectReference Include="..\Ta.Indicator\Ta.Indicator.csproj" />
-    <ProjectReference Include="..\Ta.CustomIndicator\Ta.CustomIndicator.csproj" />
-    <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
-    <ProjectReference Include="..\ScreenEdge.Broker\ScreenEdge.Broker.csproj" />
+    <ProjectReference Include="../ScreenEdge.Screener/ScreenEdge.Screener.csproj" />
+    <ProjectReference Include="../Ta.Indicator/Ta.Indicator.csproj" />
+    <ProjectReference Include="../Ta.CustomIndicator/Ta.CustomIndicator.csproj" />
+    <ProjectReference Include="../ScreenEdge.Entity/ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="../ScreenEdge.Broker/ScreenEdge.Broker.csproj" />
   </ItemGroup>
 
 </Project>

@@ -22,10 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
-    <ProjectReference Include="..\ScreenEdge.Repository\ScreenEdge.Repository.csproj" />
-    <ProjectReference Include="..\ScreenEdge.Screener\ScreenEdge.Screener.csproj" />
-    <ProjectReference Include="..\ScreenEdge.Broker\ScreenEdge.Broker.csproj" />
+    <ProjectReference Include="../ScreenEdge.Entity/ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="../ScreenEdge.Repository/ScreenEdge.Repository.csproj" />
+    <ProjectReference Include="../ScreenEdge.Screener/ScreenEdge.Screener.csproj" />
+    <ProjectReference Include="../ScreenEdge.Broker/ScreenEdge.Broker.csproj" />
   </ItemGroup>
 
 </Project>

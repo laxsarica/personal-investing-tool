@@ -14,14 +14,13 @@ COPY ScreenEdge.Web/ClientApp/ ./
 RUN npm run build -- --configuration production
 
 # ═════════════════════════════════════════════════════════════════════════
-# Stage 2 — Build .NET 8 Backend
+# Stage 2 — Build .NET Backend
 # ═════════════════════════════════════════════════════════════════════════
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS api-build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS api-build
 
 WORKDIR /build/api
 
 # Restore packages first (layer-cached when .csproj files haven't changed)
-COPY ScreenEdge.sln ./
 COPY ScreenEdge.Api/ScreenEdge.Api.csproj                         ScreenEdge.Api/
 COPY ScreenEdge.Entity/ScreenEdge.Entity.csproj                 ScreenEdge.Entity/
 COPY ScreenEdge.Repository/ScreenEdge.Repository.csproj         ScreenEdge.Repository/
@@ -55,7 +54,7 @@ RUN dotnet publish ScreenEdge.Api/ScreenEdge.Api.csproj \
 #   • Nginx reverse-proxies /api/* to .NET Kestrel on 127.0.0.1:5000
 #   • start.sh launches both processes; Nginx runs in foreground (PID 1)
 # ═════════════════════════════════════════════════════════════════════════
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim AS final
 
 # Install nginx + envsubst (from gettext-base) in one layer
 RUN apt-get update \

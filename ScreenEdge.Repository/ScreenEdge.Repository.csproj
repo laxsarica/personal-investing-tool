@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ScreenEdge.Entity\ScreenEdge.Entity.csproj" />
+    <ProjectReference Include="../ScreenEdge.Entity/ScreenEdge.Entity.csproj" />
   </ItemGroup>
 
   <ItemGroup>
