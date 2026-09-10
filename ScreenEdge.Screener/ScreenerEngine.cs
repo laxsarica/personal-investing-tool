@@ -8,6 +8,7 @@ using Ta.CustomIndicator.BreakOut;
 using Ta.CustomIndicator.EmaFifty;
 using Ta.CustomIndicator.RsiWma;
 using Ta.CustomIndicator.UptrendBot;
+using Ta.CustomIndicator.RsiSmaCandle;
 using Ta.CustomIndicator.WealthCreation;
 using Ta.CustomIndicator.ZeroLag;
 using Ta.Indicator.Base;
@@ -107,6 +108,9 @@ public class ScreenerEngine : IScreenerEngine
                     screeners.Add(s);
 
                 foreach (var s in WealthCreationScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                    screeners.Add(s);
+
+                foreach (var s in RsiSmaCandleScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
                     screeners.Add(s);
             }
             catch (Exception ex)
@@ -410,6 +414,42 @@ public class ScreenerEngine : IScreenerEngine
             }
         }
         catch (Exception) { }
+        return source;
+    }
+
+    private static List<ScreenerEntity> RsiSmaCandleScreener(
+        string symbol, List<PriceHistory> daily, List<PriceHistory> weekly,
+        double rsiDaily, double rsiWeekly, double rsiMonthly)
+    {
+        var source = new List<ScreenerEntity>();
+        try
+        {
+            // Weekly scan
+            if (weekly.Count > 74) // MaPeriod(30)*2 + RsiPeriod(14) headroom
+            {
+                var weeklyIndicator = new RsiSmaCandleIndicator();
+                var weeklyResults = weeklyIndicator.Calculate(weekly);
+                if (weeklyResults.Count > 0 && weeklyResults.Last().BuySignal)
+                {
+                    source.Add(CreateScreener(symbol, StrategyEnum.RSISMACANDLE, "W",
+                        weekly.Last(), rsiDaily, rsiWeekly, rsiMonthly));
+                }
+            }
+
+            // Daily scan
+            if (daily.Count > 74)
+            {
+                var dailyIndicator = new RsiSmaCandleIndicator();
+                var dailyResults = dailyIndicator.Calculate(daily);
+                if (dailyResults.Count > 0 && dailyResults.Last().BuySignal)
+                {
+                    source.Add(CreateScreener(symbol, StrategyEnum.RSISMACANDLE, "D",
+                        daily.Last(), rsiDaily, rsiWeekly, rsiMonthly));
+                }
+            }
+        }
+        catch (Exception) { }
+
         return source;
     }
 

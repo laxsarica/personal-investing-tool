@@ -9,5 +9,6 @@ public enum StrategyEnum
     RSITTF,
     RSIFULL,
     UPTRENDBOT,
-    WEALTHCREATION
+    WEALTHCREATION,
+    RSISMACANDLE
 }
