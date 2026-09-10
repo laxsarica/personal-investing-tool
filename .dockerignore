@@ -1,0 +1,30 @@
+# ── General ──────────────────────────────────────────────────────────
+.git
+.gitignore
+.github
+.vs
+.vscode
+*.md
+docs/
+setup_iis.ps1
+
+# ── Large Database Files (Ignore local SQL Server files) ──────────────
+Data/*.mdf
+Data/*.ldf
+Data/Backtest/
+
+# ── Backend ──────────────────────────────────────────────────────────
+ScreenEdge.Tests/
+**/bin/
+**/obj/
+**/*.user
+
+# ── Frontend ─────────────────────────────────────────────────────────
+ScreenEdge.Web/ClientApp/node_modules/
+ScreenEdge.Web/ClientApp/dist/
+ScreenEdge.Web/ClientApp/.angular/
+
+# ── Secrets / local config ───────────────────────────────────────────
+**/*.Development.json
+**/*.local
+*.env

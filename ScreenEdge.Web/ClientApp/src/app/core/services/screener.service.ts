@@ -5,7 +5,7 @@ import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult, Sto
 
 @Injectable({ providedIn: 'root' })
 export class ScreenerService {
-  private readonly API_URL = 'http://localhost:5100/api/screener';
+  private readonly API_URL = '/api/screener';
 
   constructor(private http: HttpClient) {}
 
@@ -40,6 +40,6 @@ export class ScreenerService {
   }
 
   getStockNews(symbol: string): Observable<{ items: StockNewsItem[] }> {
-    return this.http.get<{ items: StockNewsItem[] }>(`http://localhost:5100/api/news/${symbol}`);
+    return this.http.get<{ items: StockNewsItem[] }>(`/api/news/${symbol}`);
   }
 }
