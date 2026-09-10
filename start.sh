@@ -11,6 +11,7 @@ export PORT="${PORT:-8080}"
 cd /app/api
 
 export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
+export ASPNETCORE_HTTP_PORTS="5000"
 export ASPNETCORE_URLS="http://127.0.0.1:5000"
 export ASPNETCORE_CONTENTROOT=/app/api
 export DOTNET_ROLL_FORWARD=Major
@@ -28,13 +29,17 @@ while [ $count -lt $max_retries ]; do
         echo "[FATAL] .NET API process exited unexpectedly! See error logs above."
         exit 1
     fi
-    if curl -s -f -o /dev/null http://127.0.0.1:5000/api/screener 2>/dev/null || curl -s -o /dev/null http://127.0.0.1:5000 2>/dev/null; then
+    if curl -s -I http://127.0.0.1:5000/ > /dev/null 2>&1 || curl -s -f -o /dev/null http://127.0.0.1:5000/api/screener 2>/dev/null; then
         echo ".NET API is up and listening on port 5000."
         break
     fi
     sleep 1
     count=$((count + 1))
 done
+
+if [ $count -ge $max_retries ]; then
+    echo "[WARNING] .NET API did not confirm readiness on port 5000 within ${max_retries}s. Proceeding with Nginx..."
+fi
 
 # ── 2. Substitute $PORT into Nginx config and start Nginx ───────────────
 envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf

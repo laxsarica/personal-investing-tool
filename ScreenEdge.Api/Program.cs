@@ -15,11 +15,16 @@ using ScreenEdge.Api.Jobs;
 // Enable Npgsql legacy timestamp behavior for seamless DateTime compatibility
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+Console.WriteLine("[Startup] Initializing ScreenEdge API...");
+
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
     ContentRootPath = AppContext.BaseDirectory
 });
+
+// Explicitly bind Kestrel to 127.0.0.1:5000 so container ASPNETCORE_HTTP_PORTS does not redirect to 8080
+builder.WebHost.UseUrls("http://127.0.0.1:5000");
 
 // Resolve PostgreSQL Connection String (supports both ADO.NET and URI format)
 var connectionString = ResolvePostgresConnectionString(builder.Configuration);
@@ -143,17 +148,21 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
+        Console.WriteLine("[Startup] Checking and applying database migrations...");
         logger.LogInformation("Checking and applying pending database migrations...");
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         dbContext.Database.Migrate();
+        Console.WriteLine("[Startup] Database migrations applied successfully.");
         logger.LogInformation("Database migrations applied successfully.");
     }
     catch (Exception ex)
     {
+        Console.WriteLine($"[Startup ERROR] Migration failed: {ex.Message}");
         logger.LogError(ex, "An error occurred while applying EF Core database migrations.");
     }
 }
 
+Console.WriteLine("[Startup] Kestrel ready. Starting server on http://127.0.0.1:5000...");
 app.Run();
 
 // Helper method to resolve and normalize PostgreSQL connection strings

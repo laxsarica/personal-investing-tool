@@ -56,7 +56,9 @@ RUN dotnet publish ScreenEdge.Api/ScreenEdge.Api.csproj \
 # ═════════════════════════════════════════════════════════════════════════
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim AS final
 
-ENV DOTNET_ROLL_FORWARD=Major
+ENV DOTNET_ROLL_FORWARD=Major \
+    ASPNETCORE_HTTP_PORTS=5000 \
+    ASPNETCORE_URLS=http://127.0.0.1:5000
 
 # Install nginx + envsubst (from gettext-base) in one layer
 RUN apt-get update \
