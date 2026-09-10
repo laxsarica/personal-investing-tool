@@ -123,24 +123,32 @@ app.UseHangfireDashboard("/hangfire");
 app.MapControllers();
 
 // Register Hangfire Recurring Jobs
+try
+{
+    Console.WriteLine("[Startup] Registering Hangfire recurring jobs...");
+    // Remove legacy standalone jobs
+    RecurringJob.RemoveIfExists("daily-data-sync");
+    RecurringJob.RemoveIfExists("daily-screener-run");
+    RecurringJob.RemoveIfExists("weekly-finnhub-sync"); // Replaced by Yahoo Finance
 
-// Remove legacy standalone jobs
-RecurringJob.RemoveIfExists("daily-data-sync");
-RecurringJob.RemoveIfExists("daily-screener-run");
-RecurringJob.RemoveIfExists("weekly-finnhub-sync"); // Replaced by Yahoo Finance
+    // Single authoritative daily job: sync data → run screener (Mon–Fri, 6:30 AM IST)
+    RecurringJob.AddOrUpdate<ScreenerJob>(
+        "daily-screener-workflow",
+        job => job.RunDailyWorkflowAsync(),
+        "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
+    );
 
-// Single authoritative daily job: sync data → run screener (Mon–Fri, 6:30 AM IST)
-RecurringJob.AddOrUpdate<ScreenerJob>(
-    "daily-screener-workflow",
-    job => job.RunDailyWorkflowAsync(),
-    "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
-);
-
-RecurringJob.AddOrUpdate<FundamentalsSyncJob>(
-    "weekly-fundamentals-sync", 
-    x => x.SyncFundamentalsAsync(), 
-    Cron.Weekly(DayOfWeek.Saturday, 2)
-); // Runs every Saturday at 2 AM UTC
+    RecurringJob.AddOrUpdate<FundamentalsSyncJob>(
+        "weekly-fundamentals-sync", 
+        x => x.SyncFundamentalsAsync(), 
+        Cron.Weekly(DayOfWeek.Saturday, 2)
+    ); // Runs every Saturday at 2 AM UTC
+    Console.WriteLine("[Startup] Hangfire recurring jobs registered.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[Startup WARNING] Failed to register recurring jobs: {ex.Message}");
+}
 
 // Automatically apply any pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
@@ -196,11 +204,46 @@ static string ResolvePostgresConnectionString(IConfiguration configuration)
         var userInfo = uri.UserInfo.Split(':');
         var username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "postgres";
         var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var host = uri.Host;
         var port = uri.Port > 0 ? uri.Port : 5432;
         var database = uri.AbsolutePath.TrimStart('/');
+        // Internal container hosts (e.g. "db-062998dd945d") use "Prefer", external domains use "Require"
+        var sslMode = host.Contains(".") ? "Require" : "Prefer";
+        if (raw.Contains("sslmode=disable", StringComparison.OrdinalIgnoreCase))
+            sslMode = "Disable";
+        else if (raw.Contains("sslmode=prefer", StringComparison.OrdinalIgnoreCase))
+            sslMode = "Prefer";
+        else if (raw.Contains("sslmode=require", StringComparison.OrdinalIgnoreCase))
+            sslMode = "Require";
 
-        var conn = $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
-        Console.WriteLine($"[Startup] Resolved PostgreSQL URI -> Host: {uri.Host}, Port: {port}, Database: {database}, User: {username}");
+        // When running inside Voroa/Docker, connecting to public external *.getvoroa.com IP fails due to hairpin NAT.
+        // Check if internal Docker DNS can resolve the service container name (e.g. "db-062998dd945d" or "postgres").
+        if (host.EndsWith(".getvoroa.com", StringComparison.OrdinalIgnoreCase) || host.Contains(".db.getvoroa.com"))
+        {
+            var internalCandidates = new[] { host.Split('.')[0], "postgres", "db", "database" };
+            foreach (var candidate in internalCandidates)
+            {
+                try
+                {
+                    var ips = System.Net.Dns.GetHostAddresses(candidate);
+                    if (ips != null && ips.Length > 0)
+                    {
+                        Console.WriteLine($"[Startup] Detected internal Docker network! Resolved '{candidate}' -> {ips[0]}. Using internal port 5432.");
+                        host = candidate;
+                        port = 5432;
+                        sslMode = "Prefer";
+                        break;
+                    }
+                }
+                catch
+                {
+                    // Candidate not resolvable in current DNS environment
+                }
+            }
+        }
+
+        var conn = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true;Timeout=15;";
+        Console.WriteLine($"[Startup] Resolved PostgreSQL -> Host: {host}, Port: {port}, Database: {database}, User: {username}, SSL: {sslMode}");
         return conn;
     }
 
