@@ -57,7 +57,7 @@ export class DashboardComponent implements OnInit {
   stockNews: StockNewsItem[] = [];
   loadingNews = false;
 
-  strategies = ['All', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT'];
+  strategies = ['All', 'RSISMACANDLE', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT', 'RSITTF'];
   timeFrames = ['All', 'D', 'W'];
 
   constructor(private screenerService: ScreenerService) {}

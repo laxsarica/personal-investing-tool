@@ -52,6 +52,16 @@ export class JobsComponent implements OnInit {
   }
 
   getBreakdown(job: JobRun): string {
-    return job.strategies.map((s: { strategy: string; count: number }) => `${s.strategy.substring(0, 2)}:${s.count}`).join(' ');
+    const abbrev: Record<string, string> = {
+      'RSISMACANDLE': 'RSC',
+      'NOLAG': 'NL',
+      'EMAFIFTY': 'EMA',
+      'SUPPORTRESISTANCE': 'SR',
+      'RSIWMA': 'RW',
+      'UPTRENDBOT': 'UB',
+      'RSITTF': 'RT',
+      'WEALTHCREATION': 'WC'
+    };
+    return job.strategies.map((s: { strategy: string; count: number }) => `${abbrev[s.strategy] || s.strategy.substring(0, 2)}:${s.count}`).join(' ');
   }
 }
