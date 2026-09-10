@@ -84,7 +84,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost", "http://localhost:8080")
+        policy.WithOrigins(
+                  "http://localhost:4200", 
+                  "http://localhost", 
+                  "http://localhost:8080",
+                  "https://screener.getvoroa.com"
+              )
+              .SetIsOriginAllowed(origin =>
+                  string.IsNullOrEmpty(origin) ||
+                  origin.EndsWith(".getvoroa.com", StringComparison.OrdinalIgnoreCase) ||
+                  origin.StartsWith("http://localhost", StringComparison.OrdinalIgnoreCase))
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
