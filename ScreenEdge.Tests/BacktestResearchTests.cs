@@ -21,7 +21,7 @@ public class BacktestResearchTests
     // Backtest configuration
     private const double WinThresholdPercent = 5.0;
     private const double LossThresholdPercent = -3.0;
-    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;";
+    private const string ConnectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;";
 
     public BacktestResearchTests(ITestOutputHelper output)
     {

@@ -13,7 +13,7 @@ namespace ScreenEdge.Tests;
 public class DataIngestionTests
 {
     private readonly ITestOutputHelper _output;
-    private const string ConnectionString = "Host=db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=gKzmiSPjxLeswnZtbYvVthRag37zvZ52;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+    private const string ConnectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
 
     static DataIngestionTests()
     {
