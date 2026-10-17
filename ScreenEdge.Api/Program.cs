@@ -131,11 +131,11 @@ try
     RecurringJob.RemoveIfExists("daily-screener-run");
     RecurringJob.RemoveIfExists("weekly-finnhub-sync"); // Replaced by Yahoo Finance
 
-    // Single authoritative daily job: sync data → run screener (Mon–Fri, 6:30 AM IST)
+    // Single authoritative daily job: sync data → run screener (Mon–Fri, 5:00 PM IST / 11:30 AM UTC after market close)
     RecurringJob.AddOrUpdate<ScreenerJob>(
         "daily-screener-workflow",
         job => job.RunDailyWorkflowAsync(),
-        "0 1 * * 1-5" // 6:30 AM IST (1:00 AM UTC), Monday to Friday
+        "30 11 * * 1-5" // 5:00 PM IST (11:30 AM UTC), Monday to Friday (market closes 3:30 PM IST)
     );
 
     RecurringJob.AddOrUpdate<FundamentalsSyncJob>(

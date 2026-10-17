@@ -23,8 +23,12 @@ public class ScreenerJob
     [AutomaticRetry(Attempts = 3)]
     public async Task RunDailyWorkflowAsync()
     {
-        // Weekend guard — market is never open on Sat/Sun
-        var today = DateTime.Today;
+        // Indian Standard Time (IST = UTC + 5:30)
+        var istZone = TimeZoneInfo.FindSystemTimeZoneById(
+            OperatingSystem.IsWindows() ? "India Standard Time" : "Asia/Kolkata");
+        var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+        var today = istNow.Date;
+
         if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
         {
             _logger.LogInformation("Skipping daily workflow — {Date} ({Day}) is a weekend.",
@@ -32,7 +36,7 @@ public class ScreenerJob
             return;
         }
 
-        _logger.LogInformation("Starting daily workflow (Sync Data -> Run Screener).");
+        _logger.LogInformation("Starting daily workflow (Sync Data -> Run Screener). Current IST Date: {Date}", today);
         
         try
         {
