@@ -213,4 +213,95 @@ public class ScreenerController : ControllerBase
             f.LastUpdated
         });
     }
+
+    // ─── Strategy Management ─────────────────────────────────────────
+
+    /// <summary>Get all screener strategies and their enabled/disabled status.</summary>
+    [HttpGet("strategies")]
+    public async Task<IActionResult> GetStrategies()
+    {
+        var strategies = await _context.ScreenerStrategies
+            .OrderBy(s => s.Id)
+            .Select(s => new
+            {
+                s.Id,
+                s.StrategyName,
+                s.DisplayName,
+                s.Description,
+                s.IsEnabled,
+                s.UpdatedAt
+            })
+            .ToListAsync();
+
+        return Ok(strategies);
+    }
+
+    /// <summary>Toggle a single strategy's enabled state.</summary>
+    [HttpPut("strategies/{strategyName}/toggle")]
+    public async Task<IActionResult> ToggleStrategy(string strategyName)
+    {
+        var strategy = await _context.ScreenerStrategies
+            .FirstOrDefaultAsync(s => s.StrategyName == strategyName.ToUpper());
+
+        if (strategy == null)
+            return NotFound(new { Message = $"Strategy '{strategyName}' not found." });
+
+        strategy.IsEnabled = !strategy.IsEnabled;
+        strategy.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            strategy.StrategyName,
+            strategy.DisplayName,
+            strategy.IsEnabled,
+            Message = strategy.IsEnabled ? "Strategy ENABLED" : "Strategy DISABLED"
+        });
+    }
+
+    /// <summary>Enable or disable a specific strategy.</summary>
+    [HttpPut("strategies/{strategyName}")]
+    public async Task<IActionResult> SetStrategyState(string strategyName, [FromQuery] bool enabled)
+    {
+        var strategy = await _context.ScreenerStrategies
+            .FirstOrDefaultAsync(s => s.StrategyName == strategyName.ToUpper());
+
+        if (strategy == null)
+            return NotFound(new { Message = $"Strategy '{strategyName}' not found." });
+
+        strategy.IsEnabled = enabled;
+        strategy.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            strategy.StrategyName,
+            strategy.DisplayName,
+            strategy.IsEnabled,
+            Message = enabled ? "Strategy ENABLED" : "Strategy DISABLED"
+        });
+    }
+
+    /// <summary>Bulk update: set which strategies are enabled (all others disabled).</summary>
+    [HttpPut("strategies/bulk")]
+    public async Task<IActionResult> BulkSetStrategies([FromBody] List<string> enabledStrategies)
+    {
+        var allStrategies = await _context.ScreenerStrategies.ToListAsync();
+        var enabledSet = enabledStrategies.Select(s => s.ToUpper()).ToHashSet();
+
+        foreach (var strategy in allStrategies)
+        {
+            strategy.IsEnabled = enabledSet.Contains(strategy.StrategyName);
+            strategy.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(allStrategies.Select(s => new
+        {
+            s.StrategyName,
+            s.DisplayName,
+            s.IsEnabled
+        }));
+    }
 }

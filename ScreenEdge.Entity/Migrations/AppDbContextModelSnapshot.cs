@@ -112,6 +112,123 @@ namespace ScreenEdge.Entity.Migrations
                     b.ToTable("Screeners");
                 });
 
+            modelBuilder.Entity("ScreenEdge.Entity.Entities.ScreenerStrategy", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StrategyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyName")
+                        .IsUnique();
+
+                    b.ToTable("ScreenerStrategies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Description = "ZeroLag crossover screener — detects momentum shift using zero-lag EMA signals.",
+                            DisplayName = "ZeroLag",
+                            IsEnabled = true,
+                            StrategyName = "NOLAG",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Description = "EMA-50 crossover screener — detects price crossing above EMA-50.",
+                            DisplayName = "EMA 50",
+                            IsEnabled = false,
+                            StrategyName = "EMAFIFTY",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Description = "Support/Resistance breakout screener — detects price breaking out above key resistance levels.",
+                            DisplayName = "Support/Resistance Breakout",
+                            IsEnabled = true,
+                            StrategyName = "SUPPORTRESISTANCE",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Description = "RSI-Weighted Moving Average screener — detects bullish RSI-WMA crossovers.",
+                            DisplayName = "RSI Weighted MA",
+                            IsEnabled = false,
+                            StrategyName = "RSIWMA",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Description = "RSI Triple Timeframe — monthly/weekly uptrend with daily pullback recovery.",
+                            DisplayName = "RSI Triple Timeframe",
+                            IsEnabled = false,
+                            StrategyName = "RSITTF",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            Description = "RSI oversold zone with bullish candlestick pattern confirmation.",
+                            DisplayName = "RSI Full + Candlestick",
+                            IsEnabled = false,
+                            StrategyName = "RSIFULL",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Description = "ATR-based uptrend detection bot — identifies buy signals from trend reversals.",
+                            DisplayName = "Uptrend Bot",
+                            IsEnabled = false,
+                            StrategyName = "UPTRENDBOT",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            Description = "Long-term wealth creation indicator — identifies stocks in sustained uptrends.",
+                            DisplayName = "Wealth Creation",
+                            IsEnabled = false,
+                            StrategyName = "WEALTHCREATION",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 9L,
+                            Description = "RSI + SMA + Candlestick composite screener — detects buy signals from multi-indicator confluence.",
+                            DisplayName = "RSI SMA Candle",
+                            IsEnabled = true,
+                            StrategyName = "RSISMACANDLE",
+                            UpdatedAt = new DateTime(2026, 10, 18, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
             modelBuilder.Entity("ScreenEdge.Entity.Entities.StockFundamental", b =>
                 {
                     b.Property<long>("Id")

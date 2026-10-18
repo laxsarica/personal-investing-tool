@@ -35,8 +35,9 @@ public class ScreenerEngine : IScreenerEngine
         var screeners = new ConcurrentBag<ScreenerEntity>();
         var errors = new ConcurrentBag<string>();
 
-        // Get all distinct stock symbols
+        // Get all distinct stock symbols and enabled strategies
         List<string> symbols;
+        HashSet<string> enabledStrategies;
         using (var scope = _scopeFactory.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -50,6 +51,15 @@ public class ScreenerEngine : IScreenerEngine
             }
                 
             symbols = await query.ToListAsync();
+
+            // Load enabled strategies from DB
+            enabledStrategies = (await context.ScreenerStrategies
+                .Where(s => s.IsEnabled)
+                .Select(s => s.StrategyName)
+                .ToListAsync())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            _logger.LogInformation("Enabled strategies from DB: {Strategies}", string.Join(", ", enabledStrategies));
         }
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
@@ -86,32 +96,60 @@ public class ScreenerEngine : IScreenerEngine
                 double rsiWeekly = GetRsi(weeklyOhlc);
                 double rsiMonthly = GetRsi(monthlyOhlc);
 
-                foreach (var s in EmaFiftyScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.EMAFIFTY.ToString()))
+                {
+                    foreach (var s in EmaFiftyScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in ZeroLagScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.NOLAG.ToString()))
+                {
+                    foreach (var s in ZeroLagScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in SupportResistanceScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.SUPPORTRESISTANCE.ToString()))
+                {
+                    foreach (var s in SupportResistanceScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in RsiWeightedMovingAverageScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.RSIWMA.ToString()))
+                {
+                    foreach (var s in RsiWeightedMovingAverageScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in RsiTtfScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.RSITTF.ToString()))
+                {
+                    foreach (var s in RsiTtfScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                // foreach (var s in FullRsiScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                //     screeners.Add(s);
+                // FullRsiScreener is commented out in original — skip unless explicitly enabled
+                // if (enabledStrategies.Contains(StrategyEnum.RSIFULL.ToString()))
+                // {
+                //     foreach (var s in FullRsiScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                //         screeners.Add(s);
+                // }
 
-                foreach (var s in UptrendBotScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.UPTRENDBOT.ToString()))
+                {
+                    foreach (var s in UptrendBotScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in WealthCreationScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.WEALTHCREATION.ToString()))
+                {
+                    foreach (var s in WealthCreationScreener(symbol, dailyData, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
 
-                foreach (var s in RsiSmaCandleScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
-                    screeners.Add(s);
+                if (enabledStrategies.Contains(StrategyEnum.RSISMACANDLE.ToString()))
+                {
+                    foreach (var s in RsiSmaCandleScreener(symbol, dailyData, weeklyOhlc, rsiDaily, rsiWeekly, rsiMonthly))
+                        screeners.Add(s);
+                }
             }
             catch (Exception ex)
             {

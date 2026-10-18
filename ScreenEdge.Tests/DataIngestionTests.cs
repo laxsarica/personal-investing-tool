@@ -68,21 +68,42 @@ public class DataIngestionTests
         var sampleStock = context.DistinctStocks.FirstOrDefault();
         var sampleCandles = context.TickerHistories.Take(3).ToList();
 
-        _output.WriteLine("==================================================");
+        var maxDate = context.TickerHistories.Max(c => (DateTime?)c.Date);
+        var maxScreenerDate = context.Screeners.Max(s => (DateTime?)s.RecognizeDate);
         _output.WriteLine($"[DB RECORD COUNTS]");
         _output.WriteLine($" - DistinctStocks:  {distinctStocks}");
         _output.WriteLine($" - TickerHistories: {tickerHistories}");
         _output.WriteLine($" - Screeners:       {screeners}");
         _output.WriteLine($" - Fundamentals:    {fundamentals}");
-        if (sampleStock != null)
-        {
-            _output.WriteLine($"Sample Stock: {sampleStock.Symbol} ({sampleStock.CompanyName}), Trading Days: {sampleStock.TotalTradingDays}");
-        }
-        foreach (var c in sampleCandles)
-        {
-            _output.WriteLine($"Sample Candle: {c.Symbol} | Date: {c.Date:yyyy-MM-dd} | Close: {c.Close} | Vol: {c.Volume}");
-        }
+        _output.WriteLine($" - Latest TickerHistory Date: {maxDate:yyyy-MM-dd}");
+        _output.WriteLine($" - Latest Screener Date:      {maxScreenerDate:yyyy-MM-dd}");
         _output.WriteLine("==================================================");
+    }
+
+    [Fact]
+    public void TruncateHistoricalAndScreenerData()
+    {
+        using var context = CreateDbContext();
+        var conn = context.Database.GetDbConnection();
+        conn.Open();
+
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandTimeout = 120;
+            // Truncate ticker_histories and screeners tables
+            cmd.CommandText = "TRUNCATE TABLE \"TickerHistories\", \"Screeners\" RESTART IDENTITY CASCADE;";
+            cmd.ExecuteNonQuery();
+            _output.WriteLine("Successfully truncated TickerHistories and Screeners tables.");
+        }
+
+        // Reset TotalTradingDays on DistinctStocks so ingestion knows to re-fetch
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandTimeout = 120;
+            cmd.CommandText = "UPDATE \"DistinctStocks\" SET \"TotalTradingDays\" = 0;";
+            cmd.ExecuteNonQuery();
+            _output.WriteLine("Reset TotalTradingDays = 0 on DistinctStocks.");
+        }
     }
 
 
