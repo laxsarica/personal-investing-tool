@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult, StockFundamental, StockNewsItem } from '../../shared/models/screener.model';
+import { ScreenerResult, ScreenerHistoryResponse, JobRun, ScreenerJobResult, StockFundamental, StockNewsItem, ScreenerStrategy } from '../../shared/models/screener.model';
 
 @Injectable({ providedIn: 'root' })
 export class ScreenerService {
   private readonly API_URL = '/api/screener';
 
   constructor(private http: HttpClient) {}
+
+  getStrategies(): Observable<ScreenerStrategy[]> {
+    return this.http.get<ScreenerStrategy[]>(`${this.API_URL}/strategies`);
+  }
 
   runScreener(): Observable<ScreenerJobResult> {
     return this.http.post<ScreenerJobResult>(`${this.API_URL}/run-all`, {});

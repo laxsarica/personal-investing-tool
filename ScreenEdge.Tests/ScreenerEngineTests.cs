@@ -131,4 +131,39 @@ public class ScreenerEngineTests
         var names = await context.Screeners.Select(s => s.ScreenerName).Distinct().ToListAsync();
         _output.WriteLine("Unique Screener Names in DB: " + string.Join(", ", names));
     }
+
+    [Fact]
+    public async Task VerifyStrategyConfiguration()
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        var services = new ServiceCollection();
+        var connectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;";
+        
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        var serviceProvider = services.BuildServiceProvider();
+        using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var strategies = await context.ScreenerStrategies.OrderBy(s => s.Id).ToListAsync();
+        
+        _output.WriteLine($"Total strategies in DB: {strategies.Count}");
+        _output.WriteLine("─────────────────────────────────────────────");
+        foreach (var s in strategies)
+        {
+            _output.WriteLine($"  {s.StrategyName,-22} | {(s.IsEnabled ? "✅ ENABLED" : "❌ DISABLED"),-14} | {s.DisplayName}");
+        }
+        _output.WriteLine("─────────────────────────────────────────────");
+
+        var enabled = strategies.Where(s => s.IsEnabled).Select(s => s.StrategyName).ToList();
+        _output.WriteLine($"Active strategies: {string.Join(", ", enabled)}");
+
+        Assert.Equal(9, strategies.Count);
+        Assert.Contains(strategies, s => s.StrategyName == "NOLAG" && s.IsEnabled);
+        Assert.Contains(strategies, s => s.StrategyName == "SUPPORTRESISTANCE" && s.IsEnabled);
+        Assert.Contains(strategies, s => s.StrategyName == "RSISMACANDLE" && s.IsEnabled);
+        Assert.Equal(3, strategies.Count(s => s.IsEnabled));
+    }
 }

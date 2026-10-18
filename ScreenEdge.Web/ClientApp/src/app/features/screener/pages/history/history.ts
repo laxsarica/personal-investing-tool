@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScreenerService } from '../../../../core/services/screener.service';
-import { ScreenerResult, ScreenerHistoryResponse } from '../../../../shared/models/screener.model';
+import { ScreenerResult, ScreenerHistoryResponse, ScreenerStrategy } from '../../../../shared/models/screener.model';
 
 @Component({
   selector: 'app-screener-history',
@@ -23,11 +23,17 @@ export class HistoryComponent implements OnInit {
   strategy = '';
   symbol = '';
 
-  strategies = ['', 'RSISMACANDLE', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT', 'RSITTF'];
+  strategies: string[] = [''];
 
   constructor(private screenerService: ScreenerService) {}
 
   ngOnInit(): void {
+    this.screenerService.getStrategies().subscribe({
+      next: (data: ScreenerStrategy[]) => {
+        const enabled = data.filter(s => s.isEnabled).map(s => s.strategyName);
+        this.strategies = ['', ...enabled];
+      }
+    });
     this.loadHistory();
   }
 

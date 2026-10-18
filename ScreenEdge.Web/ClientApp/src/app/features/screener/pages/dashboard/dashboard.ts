@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScreenerService } from '../../../../core/services/screener.service';
-import { ScreenerResult, StockFundamental, StockNewsItem } from '../../../../shared/models/screener.model';
+import { ScreenerResult, StockFundamental, StockNewsItem, ScreenerStrategy } from '../../../../shared/models/screener.model';
 
 @Component({
   selector: 'app-screener-dashboard',
@@ -57,13 +57,25 @@ export class DashboardComponent implements OnInit {
   stockNews: StockNewsItem[] = [];
   loadingNews = false;
 
-  strategies = ['All', 'RSISMACANDLE', 'NOLAG', 'EMAFIFTY', 'SUPPORTRESISTANCE', 'RSIWMA', 'UPTRENDBOT', 'RSITTF'];
+  strategies: string[] = ['All'];
+  allStrategyDetails: ScreenerStrategy[] = [];
   timeFrames = ['All', 'D', 'W'];
 
   constructor(private screenerService: ScreenerService) {}
 
   ngOnInit(): void {
+    this.loadStrategies();
     this.loadResults();
+  }
+
+  loadStrategies(): void {
+    this.screenerService.getStrategies().subscribe({
+      next: (data: ScreenerStrategy[]) => {
+        this.allStrategyDetails = data;
+        const enabled = data.filter(s => s.isEnabled).map(s => s.strategyName);
+        this.strategies = ['All', ...enabled];
+      }
+    });
   }
 
   loadResults(): void {

@@ -57,6 +57,15 @@ export interface ScreenerJobResult {
   errors: string[];
 }
 
+export interface ScreenerStrategy {
+  id: number;
+  strategyName: string;
+  displayName: string;
+  description: string;
+  isEnabled: boolean;
+  updatedAt: string;
+}
+
 export interface StockNewsProvider {
   id: string;
   name: string;
