@@ -242,7 +242,7 @@ static string ResolvePostgresConnectionString(IConfiguration configuration)
             }
         }
 
-        var conn = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true;Timeout=15;";
+        var conn = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true;Timeout=60;Command Timeout=120;Keepalive=30;Maximum Pool Size=50;";
         Console.WriteLine($"[Startup] Resolved PostgreSQL -> Host: {host}, Port: {port}, Database: {database}, User: {username}, SSL: {sslMode}");
         return conn;
     }

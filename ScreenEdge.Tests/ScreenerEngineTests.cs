@@ -90,7 +90,7 @@ public class ScreenerEngineTests
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         var services = new ServiceCollection();
-        var connectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;";
+        var connectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;Command Timeout=120;Keepalive=30;";
         
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -102,22 +102,36 @@ public class ScreenerEngineTests
 
         var engine = new ScreenerEngine(scopeFactory, logger);
 
-        _output.WriteLine("Starting Screener Engine Job...");
+        _output.WriteLine("Starting Screener Engine Job from local...");
         var result = await engine.RunScreenerJobAsync();
 
-        _output.WriteLine($"Screener completed in {result.TimeMinutes:F2} minutes.");
+        _output.WriteLine($"\n=== SCREENER JOB EXECUTION COMPLETED ===");
+        _output.WriteLine($"Status: {result.Status}");
+        _output.WriteLine($"Time Elapsed: {result.TimeMinutes:F2} minutes ({result.TimeMinutes * 60:F1} seconds)");
         _output.WriteLine($"Total Stocks Scanned: {result.TotalStocksScanned}");
         _output.WriteLine($"Total Signals Generated: {result.RecordCount}");
         
+        _output.WriteLine("\n--- Signals by Strategy ---");
         foreach(var strategy in result.SignalsByStrategy)
         {
-            _output.WriteLine($"- {strategy.Key}: {strategy.Value}");
+            _output.WriteLine($"  {strategy.Key,-25}: {strategy.Value}");
+        }
+
+        if (result.Errors != null && result.Errors.Count > 0)
+        {
+            _output.WriteLine($"\n--- Errors Encountered ({result.Errors.Count}) ---");
+            foreach (var err in result.Errors.Take(20))
+            {
+                _output.WriteLine($"  {err}");
+            }
         }
     }
 
     [Fact]
     public async Task CheckScreenerNames()
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         var services = new ServiceCollection();
         var connectionString = "Host=db-062998dd945d.db.getvoroa.com;Port=25524;Database=pg_screener_prod;Username=postgres;Password=H2BUxvQXEhrmh71Z7syPRL3zirewITBB;SSL Mode=Require;Trust Server Certificate=true;";
         
@@ -130,6 +144,21 @@ public class ScreenerEngineTests
 
         var names = await context.Screeners.Select(s => s.ScreenerName).Distinct().ToListAsync();
         _output.WriteLine("Unique Screener Names in DB: " + string.Join(", ", names));
+
+        var latestDate = await context.Screeners.MaxAsync(s => (DateTime?)s.RecognizeDate);
+        _output.WriteLine($"Latest Screener Signal Date in DB: {latestDate:yyyy-MM-dd}");
+
+        var todaySignals = await context.Screeners
+            .Where(s => s.RecognizeDate.Date == latestDate!.Value.Date)
+            .GroupBy(s => s.ScreenerName)
+            .Select(g => new { Strategy = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        _output.WriteLine($"Signals for {latestDate:yyyy-MM-dd}:");
+        foreach(var item in todaySignals)
+        {
+            _output.WriteLine($"  {item.Strategy,-25}: {item.Count}");
+        }
     }
 
     [Fact]
